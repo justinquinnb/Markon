@@ -1,6 +1,6 @@
-package com.justinquinnb.markon.application;
+package com.justinquinnb.markon.conversion.application;
 
-import com.justinquinnb.markon.abstractlang.AbstractContentTree;
+import com.justinquinnb.markon.conversion.abstractlang.AbstractContentTree;
 
 /**
  * A type capable of applying markup to the content in the language-agnostic

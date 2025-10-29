@@ -1,7 +1,7 @@
-package com.justinquinnb.markon.parsing;
+package com.justinquinnb.markon.conversion.parsing;
 
-import com.justinquinnb.markon.abstractlang.AbstractContent;
-import com.justinquinnb.markon.abstractlang.AbstractContentTree;
+import com.justinquinnb.markon.conversion.abstractlang.AbstractContent;
+import com.justinquinnb.markon.conversion.abstractlang.AbstractContentTree;
 import java.util.HashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;

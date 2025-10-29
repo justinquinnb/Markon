@@ -1,10 +1,9 @@
-package com.justinquinnb.markon.application;
+package com.justinquinnb.markon.conversion.application;
 
-import com.justinquinnb.markon.abstractlang.AbstractContent;
-import com.justinquinnb.markon.abstractlang.AbstractContentTree;
+import com.justinquinnb.markon.conversion.abstractlang.AbstractContent;
+import com.justinquinnb.markon.conversion.abstractlang.AbstractContentTree;
 import java.util.HashMap;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 /**
  * A mapping of {@link AbstractContent} types to markup-application methods that defines translation

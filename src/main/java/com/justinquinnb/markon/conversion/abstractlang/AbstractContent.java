@@ -1,4 +1,4 @@
-package com.justinquinnb.markon.abstractlang;
+package com.justinquinnb.markon.conversion.abstractlang;
 
 /**
  * Content that has been parsed from marked-up text.
