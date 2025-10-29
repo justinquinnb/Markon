@@ -1,4 +1,4 @@
 /**
- * Markup parsing models and utilities
+ * Markup parsing interfaces
  */
 package com.justinquinnb.markon.parsing;
