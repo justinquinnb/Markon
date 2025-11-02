@@ -22,7 +22,7 @@ public class PlainText implements MarkupLanguage {
 
     private static final LinkedHashMap<
         Class<? extends AbstractContent>,
-        Function<? extends AbstractContent, String>
+        Function<AbstractContent, String>
         > applicationRuleset = new LinkedHashMap<>();
 
     static {

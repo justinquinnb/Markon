@@ -1,5 +1,6 @@
 package com.justinquinnb.markon.model.conversion.abstractlang;
 
+import java.util.Collection;
 import java.util.PriorityQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,38 +86,51 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * Adjusts all surrounding content to reflect the new, digested substring.
      *
      * @param surroundings the surrounding content to adjust
-     * @param startIndex the start index of the substring that was digested
+     * @param shiftOrigin the start index of the substring that was digested
      * @param oldLength the length of the original, non-digested substring
      * @param newString the new, digested substring
      */
     public static void adjustSurroundings(
-        PriorityQueue<AbstractContent> surroundings, int startIndex, int oldLength, String newString
+        Collection<AbstractContent> surroundings, int shiftOrigin, int oldLength, String newString
     ) {
-        int shiftThreshold = startIndex + oldLength;
-        int shiftAmt = newString.length() - oldLength;
+        int shiftThreshold = shiftOrigin + oldLength;
+        int shiftAmount = newString.length() - oldLength;
 
         logger.trace("Adjusting surroundings with: Threshold={}, ShiftAmt={}, NewString=\"{}\"",
-            shiftThreshold, shiftAmt, newString);
+            shiftThreshold, shiftAmount, newString);
 
         for (AbstractContent c : surroundings) {
             logger.trace("Checking content: {}", c.getDigestedString());
+            c.adjust(shiftOrigin, oldLength, newString);
+        }
+    }
 
-            // Shift all siblings to reflect the shrinkage/inflation that the substring's digestion
-            // caused
-            if (shiftThreshold <= c.getEndsBefore() && c.getStartIndex() > 0) {
-                c.shiftStartIndex(shiftAmt);
-                logger.trace("Shifted start by: {}", shiftAmt);
-            }
+    /**
+     * Adjusts this content if necessary to reflect a change elsewhere in the surrounding string.
+     *
+     * @param shiftOrigin the start index of the substring that was changed
+     * @param oldLength the length of the original, unchanged substring
+     * @param newString the new, changed substring
+     */
+    public void adjust(int shiftOrigin, int oldLength, String newString) {
+        // Shift all siblings to reflect the shrinkage/inflation that the substring's digestion
+        // caused
+        int shiftThreshold = shiftOrigin + oldLength;
+        int shiftAmount = newString.length() - oldLength;
 
-            // Replace all parent strings containing the original one
-            if (c.surrounds(startIndex, startIndex + newString.length() - 1)) {
-                String leftPiece = c.getDigestedString().substring(0, startIndex);
-                String rightPiece = c.getDigestedString().substring(startIndex + oldLength);
-                String oldStr = c.getDigestedString().substring(startIndex, startIndex + oldLength);
-                String replacementStr = leftPiece + newString + rightPiece;
-                c.setDigestedString(replacementStr);
-                logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}\n", oldStr, newString, c.getDigestedString());
-            }
+        if (shiftThreshold <= this.getEndsBefore() && this.getStartIndex() > 0) {
+            this.shiftStartIndex(shiftAmount);
+            logger.trace("Shifted start by: {}", shiftAmount);
+        }
+
+        // Replace all parent strings containing the original one
+        if (this.surrounds(shiftOrigin, shiftOrigin + newString.length() - 1)) {
+            String leftPiece = this.getDigestedString().substring(0, shiftOrigin);
+            String rightPiece = this.getDigestedString().substring(shiftOrigin + oldLength);
+            String oldStr = this.getDigestedString().substring(shiftOrigin, shiftOrigin + oldLength);
+            String replacementStr = leftPiece + newString + rightPiece;
+            this.setDigestedString(replacementStr);
+            logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}\n", oldStr, newString, this.getDigestedString());
         }
     }
 

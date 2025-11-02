@@ -1,5 +1,7 @@
 package com.justinquinnb.markon.model.conversion.abstractlang;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -7,9 +9,9 @@ import java.util.PriorityQueue;
  * A language-agnostic representation of formatted, text-centric content.
  */
 public class AbstractContentTree implements Comparable<AbstractContentTree> {
-    private AbstractContent parent;
+    private AbstractContentTree parent;
     private AbstractContent data;
-    private PriorityQueue<AbstractContentTree> children;
+    private PriorityQueue<AbstractContentTree> children = new PriorityQueue<>();
 
     /**
      * Creates a new {@code AbstractContentTree} with the given parent, data, and children.
@@ -19,7 +21,7 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
      * @param children the children of {@code this} {@code AbstractContentTree}
      */
     public AbstractContentTree(
-        AbstractContent parent,
+        AbstractContentTree parent,
         AbstractContent data,
         PriorityQueue<AbstractContentTree> children
     ) {
@@ -34,7 +36,7 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
      * @param parent the parent node of {@code this} {@code AbstractContentTree}
      * @param data the data of {@code this} {@code AbstractContentTree} node
      */
-    public AbstractContentTree(AbstractContent parent, AbstractContent data) {
+    public AbstractContentTree(AbstractContentTree parent, AbstractContent data) {
         this(parent, data, new PriorityQueue<>());
     }
 
@@ -60,11 +62,11 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
         this(null, data, children);
     }
 
-    public AbstractContent getParent() {
+    public AbstractContentTree getParent() {
         return parent;
     }
 
-    public void setParent(AbstractContent parent) {
+    public void setParent(AbstractContentTree parent) {
         this.parent = parent;
     }
 
@@ -90,6 +92,38 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
 
     public AbstractContentTree pollChild() {
         return children.poll();
+    }
+
+    public boolean isLeaf() {
+        return children.isEmpty();
+    }
+
+    public Collection<AbstractContent> asCollection() {
+        return asCollection(this);
+    }
+
+    private static Collection<AbstractContent> asCollection(AbstractContentTree root) {
+        ArrayList<AbstractContent> content = new ArrayList<>();
+        content.add(root.getData());
+        for (AbstractContentTree child : root.getChildren()) {
+            content.addAll(asCollection(child));
+        }
+        return content;
+    }
+
+    /**
+     * Adjusts {@code this} tree where necessary to reflect a change in one of its node's strings.
+     *
+     * @param shiftOrigin the start index of the substring that was changed
+     * @param oldLength the length of the original, unchanged substring
+     * @param newString the new, changed substring
+     */
+    public void adjust(int shiftOrigin, int oldLength, String newString) {
+        this.data.adjust(shiftOrigin, oldLength, newString);
+
+        for (AbstractContentTree child : this.getChildren()) {
+            child.adjust(shiftOrigin, oldLength, newString);
+        }
     }
 
     /**

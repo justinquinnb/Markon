@@ -109,8 +109,8 @@ public class BasicParser implements MarkupParser {
                 if (possibleParent.getData().surrounds(currentContent)) {
                     logger.trace("Parent found!");
                     AbstractContentTree newNode = new AbstractContentTree(currentContent);
-                    possibleParent.getChildren().add(newNode);
-                    newNode.setParent(possibleParent.getParent());
+                    possibleParent.addChild(newNode);
+                    newNode.setParent(possibleParent);
                     possibleParents.add(newNode);
                     foundSpot = true;
                 }

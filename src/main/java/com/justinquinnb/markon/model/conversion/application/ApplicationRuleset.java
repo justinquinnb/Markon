@@ -12,9 +12,9 @@ import java.util.function.Function;
  * from the language-agnostic {@link AbstractContentTree} to the desired markup language.
  */
 public class ApplicationRuleset implements
-    Iterable<Entry<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>>>
+    Iterable<Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>>
 {
-    private final LinkedHashMap<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>> ruleset;
+    private final LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset;
     private Function<String, String> postProcessor = this::doNothing;
 
     /**
@@ -24,7 +24,7 @@ public class ApplicationRuleset implements
      * @param postProcessor the function applied to text immediately after it has been marked-up
      */
     public ApplicationRuleset(
-        LinkedHashMap<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>> ruleset,
+        LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset,
         Function<String, String> postProcessor
     ) {
         this.ruleset = ruleset;
@@ -37,7 +37,7 @@ public class ApplicationRuleset implements
      * {@link AbstractContentTree}
      */
     public ApplicationRuleset(
-        LinkedHashMap<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>> ruleset
+        LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset
     ) {
         this.ruleset = ruleset;
     }
@@ -58,7 +58,7 @@ public class ApplicationRuleset implements
      * @return the {@link ApplicationRuleset} that defines derivation of text using {@code this}
      * markup language from an {@link AbstractContentTree}
      */
-    public LinkedHashMap<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>> getApplicationRuleset() {
+    public LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> getApplicationRuleset() {
         return this.ruleset;
     }
 
@@ -71,7 +71,7 @@ public class ApplicationRuleset implements
     }
 
     @Override
-    public Iterator<Entry<Class<? extends AbstractContent>, Function<? extends AbstractContent, String>>> iterator() {
+    public Iterator<Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>> iterator() {
         return this.ruleset.entrySet().iterator();
     }
 }
