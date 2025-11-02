@@ -115,9 +115,15 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
                 String oldStr = c.getDigestedString().substring(startIndex, startIndex + oldLength);
                 String replacementStr = leftPiece + newString + rightPiece;
                 c.setDigestedString(replacementStr);
-                logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}", oldStr, newString, c.getDigestedString());
+                logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}\n", oldStr, newString, c.getDigestedString());
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "{\nstartIndex=" + this.startIndex + ",\n(endIndex=" + this.getEndIndex() + "),\n(length=" + this.getLength() +
+            "),\ndigestedString=\n" + this.digestedString + "\n}";
     }
 
     /**
