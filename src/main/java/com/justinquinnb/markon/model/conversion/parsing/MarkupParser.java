@@ -1,6 +1,6 @@
-package com.justinquinnb.markon.conversion.parsing;
+package com.justinquinnb.markon.model.conversion.parsing;
 
-import com.justinquinnb.markon.conversion.abstractlang.AbstractContentTree;
+import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 
 /**
  * A type capable of parsing marked-up text into the language-agnostic {@link AbstractContentTree}

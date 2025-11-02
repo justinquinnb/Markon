@@ -1,14 +1,15 @@
-package com.justinquinnb.markon.conversion.abstractlang;
+package com.justinquinnb.markon.model.conversion.abstractlang;
 
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * A language-agnostic representation of formatted, text-centric content.
  */
-public class AbstractContentTree {
+public class AbstractContentTree implements Comparable<AbstractContentTree> {
     private AbstractContent parent;
     private AbstractContent data;
-    private List<AbstractContentTree> children;
+    private PriorityQueue<AbstractContentTree> children;
 
     /**
      * Creates a new {@code AbstractContentTree} with the given parent, data, and children.
@@ -20,7 +21,7 @@ public class AbstractContentTree {
     public AbstractContentTree(
         AbstractContent parent,
         AbstractContent data,
-        List<AbstractContentTree> children
+        PriorityQueue<AbstractContentTree> children
     ) {
         this.parent = parent;
         this.data = data;
@@ -34,7 +35,7 @@ public class AbstractContentTree {
      * @param data the data of {@code this} {@code AbstractContentTree} node
      */
     public AbstractContentTree(AbstractContent parent, AbstractContent data) {
-        this(parent, data, null);
+        this(parent, data, new PriorityQueue<>());
     }
 
     /**
@@ -43,7 +44,7 @@ public class AbstractContentTree {
      * @param data the data of {@code this} {@code AbstractContentTree} node
      */
     public AbstractContentTree(AbstractContent data) {
-        this(null, data, null);
+        this(null, data, new PriorityQueue<>());
     }
 
     /**
@@ -54,7 +55,7 @@ public class AbstractContentTree {
      */
     public AbstractContentTree(
         AbstractContent data,
-        List<AbstractContentTree> children
+        PriorityQueue<AbstractContentTree> children
     ) {
         this(null, data, children);
     }
@@ -75,11 +76,27 @@ public class AbstractContentTree {
         this.data = data;
     }
 
-    public List<AbstractContentTree> getChildren() {
+    public PriorityQueue<AbstractContentTree> getChildren() {
         return children;
     }
 
-    public void setChildren(List<AbstractContentTree> children) {
+    public void setChildren(PriorityQueue<AbstractContentTree> children) {
         this.children = children;
+    }
+
+    public void addChild(AbstractContentTree child) {
+        children.add(child);
+    }
+
+    public AbstractContentTree pollChild() {
+        return children.poll();
+    }
+
+    /**
+     * Assigns the natural order as ascending start index.
+     */
+    @Override
+    public int compareTo(AbstractContentTree o) {
+        return Integer.compare(o.getData().getStartIndex(), this.getData().getStartIndex());
     }
 }
