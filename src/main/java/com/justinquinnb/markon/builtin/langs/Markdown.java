@@ -1,0 +1,78 @@
+package com.justinquinnb.markon.builtin.langs;
+
+import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
+import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
+import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
+import com.justinquinnb.markon.model.MarkupLanguage;
+import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
+import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
+import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
+import java.util.LinkedHashMap;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+
+/**
+ * Specification for vanilla Markdown parsing and application.
+ *
+ * @see <a href="https://www.markdownguide.org/cheat-sheet/">Markdown Guide</a>
+ */
+public class Markdown implements MarkupLanguage {
+    private static final LinkedHashMap<
+        Pattern,
+        Function<String, ? extends AbstractContent>
+        > parsingRuleset = new LinkedHashMap<>();
+
+    private static final LinkedHashMap<
+            Class<? extends AbstractContent>,
+            Function<? extends AbstractContent, String>
+            > applicationRuleset = new LinkedHashMap<>();
+
+    static {
+        parsingRuleset.put(Pattern.compile("(\\*\\*|__)([^_*\\r\\n]+?)\\1"), Markdown::parseBold);
+        parsingRuleset.put(Pattern.compile("([*_])([^_*\\r\\n]+?)\\1"), Markdown::parseItalic);
+        parsingRuleset.put(Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE), Markdown::parseHeading);
+
+        applicationRuleset.put(BoldText.class, Markdown::applyBold);
+        applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
+        applicationRuleset.put(HeadingText.class, Markdown::applyHeader);
+    }
+
+    @Override
+    public ApplicationRuleset getApplicationRuleset() {
+        return new ApplicationRuleset(applicationRuleset);
+    }
+
+    @Override
+    public ParsingRuleset getParsingRuleset() {
+        return new ParsingRuleset(parsingRuleset);
+    }
+
+    public static String applyBold(AbstractContent boldText) {
+        return "**" + ((BoldText)boldText).getDigestedString() + "**";
+    }
+
+    public static BoldText parseBold(String boldText) {
+        return new BoldText(0, boldText.substring(2, boldText.length() - 2));
+    }
+
+    public static String applyItalic(AbstractContent italicText) {
+        return "*" + ((ItalicText)italicText).getDigestedString() + "*";
+    }
+
+    public static ItalicText parseItalic(String italicText) {
+        return new ItalicText(0, italicText.substring(1, italicText.length() - 1));
+    }
+
+    public static String applyHeader(AbstractContent headerText) {
+        HeadingText header = (HeadingText)headerText;
+        return "#".repeat(header.getLevel()) + " " + header.getDigestedString() + "  \n";
+    }
+
+    public static HeadingText parseHeading(String headingText) {
+        int level = 0;
+        while (headingText.charAt(level) == '#') {
+            level++;
+        }
+        return new HeadingText(0, headingText.substring(level), level);
+    }
+}
