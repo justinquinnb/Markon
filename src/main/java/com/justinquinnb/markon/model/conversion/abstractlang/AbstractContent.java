@@ -89,82 +89,99 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * Adjusts all surrounding content to reflect the new, digested substring.
      *
      * @param surroundings the surrounding content to adjust
-     * @param startOfSubject the start index of the substring being replaced
+     * @param startOfTarget the start index of the substring being replaced
      * @param oldLength the length of the original, non-digested substring
      * @param newString the new, digested substring
      */
     public static void adjustSurroundings(
-        Collection<AbstractContent> surroundings, int startOfSubject, int oldLength, String newString
+        Collection<AbstractContent> surroundings, int startOfTarget, int oldLength, String newString
     ) {
+        logger.trace("Adjusting surroundings...");
         for (AbstractContent c : surroundings) {
-            c.adjust(startOfSubject, oldLength, newString);
+            c.adjustIfNeeded(startOfTarget, oldLength, newString);
         }
+        logger.trace("All surroundings adjusted.");
     }
 
     /**
      * Adjusts this content if necessary to reflect a change elsewhere in the surrounding string.
      *
-     * @param startOfSubject the start index of the substring being replaced
+     * @param startOfTarget the start index of the substring being replaced
      * @param oldLength the length of the original, non-digested substring
      * @param newString the new, digested substring
      */
-    public void adjust(int startOfSubject, int oldLength, String newString) {
-        int originalStart = this.getStartIndex();
-        int originalEnd = this.getEndIndex();
-        String originalString = this.getDigestedString();
+    public void adjustIfNeeded(int startOfTarget, int oldLength, String newString) {
+        /*
+        Multiple cases:
 
-        int newEnd = startOfSubject + newString.length() - 1;
+        1. This content ends completely before the start of the subject
+        2. This content starts completely after the end of the original substring (>= startOfSubject + oldLength)
+        3. This content starts before the start of the subject and ends after the end of the original substring
+         */
 
-        int shiftAmount = newString.length() - oldLength;
-        int shiftThreshold = startOfSubject + oldLength;
+        logger.trace("Checking if content requires adjustment...");
+        logger.trace("Context: startOfTarget={}, oldLength={}, newString={}, lookingAtContent=\n{}",
+            startOfTarget, oldLength, newString, this);
 
-        logger.trace("Considering adjustment of:\n{}", this);
-        logger.trace("Adjusting surroundings with context: StartOfSubject={} ShiftThreshold={}, ShiftAmount={} NewString=\n{}",
-            startOfSubject, shiftThreshold, shiftAmount, newString);
+        int oldEnd = startOfTarget + oldLength - 1; // Last index of the subject substring
+        int newEnd = startOfTarget + newString.length() - 1; // Last index of the new substring
 
-        logger.trace("Content being checked spans [{},{}]. Content to adjust for spans [{},{}].",
-            originalStart, originalEnd, startOfSubject, newEnd);
+        int thisStart = this.getStartIndex(); // First index of this substring
+        int thisEnd = this.getEndIndex(); // Last index of this substring
 
-        // Check if this instance is completely after the changed substring. If so, shift it
-        boolean shouldShift = shiftThreshold <= originalStart && originalStart >= 0;
-        if (shouldShift) {
-            this.shiftStartIndex(shiftAmount);
-            logger.trace("Shifted start by: {}", shiftAmount);
+        // Case 1 - This string is unaffected by the replacement
+        if (thisEnd < startOfTarget) {
+            logger.trace("This content is unaffected by the replacement.");
         }
 
-        // Determine whether this string contains or overlaps with the adjusted substring
-        boolean shouldReplace = !shouldShift &&
-            originalStart <= originalEnd &&
-            this.getEndIndex() >= startOfSubject;
-
-        if (shouldReplace) {
-            logger.trace("Current string to replace substring of:\n{}", originalString);
-
-            // Calculate the overlap between the old substring and this instance
-            int overlapStart = Math.max(startOfSubject, originalStart);
-            int overlapEnd = Math.min(startOfSubject + oldLength - 1, originalEnd);
-
-            // Calculate positions within this instance's string
-            int leftEnd = overlapStart - originalStart;
-            int rightStart = overlapEnd - originalStart + 1;
-
-            logger.trace("Left piece spans [{},{}]", 0, leftEnd - 1);
-            String leftPiece = originalString.substring(0, leftEnd);
-
-            logger.trace("Right piece spans [{},{}]", rightStart, originalString.length() - 1);
-            String rightPiece = originalString.substring(rightStart);
-
-            String oldSubstring = originalString.substring(leftEnd, rightStart);
-            String replacementStr = leftPiece + newString + rightPiece;
-
-            this.setDigestedString(replacementStr);
-            logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}", oldSubstring, newString, replacementStr);
+        // Case 2 - Shift this according to the difference in new string and old string lengths
+        boolean changesMade = false;
+        if (oldEnd < thisStart) {
+            // Calculate the difference between the old and new string lengths
+            int difference = newEnd - oldEnd;
+            logger.trace("This content starts (at {}) after the original string's end (at {}), so shifting by: {}",
+                thisStart, oldEnd, difference);
+            this.shiftStartIndex(difference);
+            changesMade = true;
         }
 
-        if (!shouldShift && !shouldReplace) {
-            logger.trace("No adjustments needed.");
+        // Case 3 - This content surrounds the original
+        // Replace original substring as it appears within this content with the new substring
+        if (this.surrounds(startOfTarget, oldEnd)) {
+            // If complete replacement, skip splicing
+            if (thisStart == startOfTarget && thisEnd == oldEnd) {
+                logger.trace("This content (spanning [{},{}]) is entirely replaced by the new "
+                    + "string (spanning [{},{}]), so replacing this content's string entirely...",
+                    thisStart, thisEnd, startOfTarget, oldEnd);
+                this.setDigestedString(newString);
+            } else {
+                logger.trace("This content (spanning [{},{}]) surrounds the original string "
+                        + "(spanning [{},{}]), so splicing new into original surroundings...",
+                    thisStart, thisEnd, startOfTarget, oldEnd);
+
+                // Get this content's text up until the index immediately before the old substring
+                String leftPart = this.digestedString.substring(0, startOfTarget);
+                logger.trace("Text left of original substring:\n{}", leftPart);
+
+                // Get this content's text after the index immediately following the old substring
+                String rightPart = this.digestedString.substring(oldEnd + 1);
+                logger.trace("Text right of original substring:\n{}", rightPart);
+
+                // Wrap the new string with the original pieces around the old substring
+                String newDigestedString = leftPart + newString + rightPart;
+
+                // Update this content to reflect the new digested string
+                logger.trace("Replacing this content's digested string with:\n{}",
+                    newDigestedString);
+                this.setDigestedString(newDigestedString);
+            }
+            changesMade = true;
+        }
+
+        if (changesMade) {
+            logger.trace("This content has been adjusted to:\n{}", this);
         } else {
-            logger.trace("Adjustment completed:\n{}\n", this);
+            logger.trace("No adjustments made to this content.");
         }
     }
 

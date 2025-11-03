@@ -129,7 +129,7 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
      * @param newString the new, changed substring
      */
     public void adjust(int substringStart, int oldLength, String newString) {
-        this.data.adjust(substringStart, oldLength, newString);
+        this.data.adjustIfNeeded(substringStart, oldLength, newString);
 
         for (AbstractContentTree child : this.getChildren()) {
             if (!child.wasVisited()) {
