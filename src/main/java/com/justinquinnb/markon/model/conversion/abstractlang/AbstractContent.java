@@ -89,41 +89,44 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * Adjusts all surrounding content to reflect the new, digested substring.
      *
      * @param surroundings the surrounding content to adjust
-     * @param substringStart the start index of the substring that was digested
+     * @param startOfSubject the start index of the substring being replaced
      * @param oldLength the length of the original, non-digested substring
      * @param newString the new, digested substring
      */
     public static void adjustSurroundings(
-        Collection<AbstractContent> surroundings, int substringStart, int oldLength, String newString
+        Collection<AbstractContent> surroundings, int startOfSubject, int oldLength, String newString
     ) {
         for (AbstractContent c : surroundings) {
-            c.adjust(substringStart, oldLength, newString);
+            c.adjust(startOfSubject, oldLength, newString);
         }
     }
 
     /**
      * Adjusts this content if necessary to reflect a change elsewhere in the surrounding string.
      *
-     * @param substringStart start index of the substring that was changed
-     * @param oldLength the length of the original, unchanged substring
-     * @param newString the new, changed substring
+     * @param startOfSubject the start index of the substring being replaced
+     * @param oldLength the length of the original, non-digested substring
+     * @param newString the new, digested substring
      */
-    public void adjust(int substringStart, int oldLength, String newString) {
-        // Shift all siblings to reflect the shrinkage/inflation that the substring's digestion
-        // caused
+    public void adjust(int startOfSubject, int oldLength, String newString) {
+        int originalStart = this.getStartIndex();
+        int originalEnd = this.getEndIndex();
+        String originalString = this.getDigestedString();
+
+        int newEnd = startOfSubject + newString.length() - 1;
+
         int shiftAmount = newString.length() - oldLength;
-        int substringEnd = substringStart + oldLength - 1;
-        int shiftThreshold = substringStart + oldLength;
+        int shiftThreshold = startOfSubject + oldLength;
 
         logger.trace("Considering adjustment of:\n{}", this);
-        logger.trace("Adjusting surroundings with context: SharedStart={} ShiftThreshold={}, ShiftAmount={} NewString=\n{}",
-            substringStart, shiftThreshold, shiftAmount, newString);
+        logger.trace("Adjusting surroundings with context: StartOfSubject={} ShiftThreshold={}, ShiftAmount={} NewString=\n{}",
+            startOfSubject, shiftThreshold, shiftAmount, newString);
 
         logger.trace("Content being checked spans [{},{}]. Content to adjust for spans [{},{}].",
-            this.getStartIndex(), this.getEndIndex(), substringStart, substringEnd);
+            originalStart, originalEnd, startOfSubject, newEnd);
 
-        // Check if this instance is completely after the changed substring - if so, shift it
-        boolean shouldShift = shiftThreshold <= this.getStartIndex() && this.getStartIndex() >= 0;
+        // Check if this instance is completely after the changed substring. If so, shift it
+        boolean shouldShift = shiftThreshold <= originalStart && originalStart >= 0;
         if (shouldShift) {
             this.shiftStartIndex(shiftAmount);
             logger.trace("Shifted start by: {}", shiftAmount);
@@ -131,31 +134,31 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
 
         // Determine whether this string contains or overlaps with the adjusted substring
         boolean shouldReplace = !shouldShift &&
-            this.getStartIndex() <= substringEnd &&
-            this.getEndIndex() >= substringStart;
+            originalStart <= originalEnd &&
+            this.getEndIndex() >= startOfSubject;
 
         if (shouldReplace) {
-            logger.trace("Current string to replace substring of:\n{}", this.getDigestedString());
+            logger.trace("Current string to replace substring of:\n{}", originalString);
 
             // Calculate the overlap between the old substring and this instance
-            int overlapStart = Math.max(substringStart, this.getStartIndex());
-            int overlapEnd = Math.min(substringEnd, this.getEndIndex());
+            int overlapStart = Math.max(startOfSubject, originalStart);
+            int overlapEnd = Math.min(startOfSubject + oldLength - 1, originalEnd);
 
             // Calculate positions within this instance's string
-            int leftEnd = overlapStart - this.getStartIndex();
-            int rightStart = overlapEnd - this.getStartIndex() + 1;
+            int leftEnd = overlapStart - originalStart;
+            int rightStart = overlapEnd - originalStart + 1;
 
             logger.trace("Left piece spans [{},{}]", 0, leftEnd - 1);
-            String leftPiece = this.getDigestedString().substring(0, leftEnd);
+            String leftPiece = originalString.substring(0, leftEnd);
 
-            logger.trace("Right piece spans [{},{}]", rightStart, this.getDigestedString().length());
-            String rightPiece = this.getDigestedString().substring(rightStart);
+            logger.trace("Right piece spans [{},{}]", rightStart, originalString.length() - 1);
+            String rightPiece = originalString.substring(rightStart);
 
-            String oldStr = this.getDigestedString().substring(leftEnd, rightStart);
+            String oldSubstring = originalString.substring(leftEnd, rightStart);
             String replacementStr = leftPiece + newString + rightPiece;
 
             this.setDigestedString(replacementStr);
-            logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}", oldStr, newString, this.getDigestedString());
+            logger.trace("Replaced \"{}\" with \"{}\" to create:\n{}", oldSubstring, newString, replacementStr);
         }
 
         if (!shouldShift && !shouldReplace) {

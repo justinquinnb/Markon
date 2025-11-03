@@ -24,13 +24,14 @@ public class TestMarkdown {
     @Test
     public void givenPlainText_whenMarkedUp_thenMarkdown() {
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
-        markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
+        //markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
 
         BasicParser parser = new BasicParser();
         BasicApplier applier = new BasicApplier();
         Markdown lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang.getParsingRuleset());
         String markedUpText = applier.apply(contentTree, lang.getApplicationRuleset());
+        System.out.println(markedUpText);
         assert markedUpText.equals(markdown);
     }
 }
