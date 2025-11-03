@@ -57,12 +57,12 @@ public class BasicParser implements MarkupParser {
                 // Parse the match
                 AbstractContent parsedContent = rule.getValue().apply(matchedText);
                 parsedContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
+                logger.trace("Parsed into:\n{}", parsedContent);
 
                 // Update all parents
                 AbstractContent.adjustSurroundings(
                     content, matcher.start(), matchLength, parsedContent.getDigestedString());
 
-                logger.trace("Digested match into parsedContent:\n{}\n\n", parsedContent);
                 content.add(parsedContent);
 
                 // Replace the exact instance of matched text with the digested text
@@ -71,10 +71,12 @@ public class BasicParser implements MarkupParser {
 
                 workingText = leftPiece + parsedContent.getDigestedString() + rightPiece;
                 matcher = rule.getKey().matcher(workingText);
+                logger.trace("Match processing complete.\n");
             }
+            logger.trace("All matches processed for pattern.\n");
         }
 
-        logger.trace("All content parsed.");
+        logger.trace("All content parsed.\n");
         return content;
     }
 
