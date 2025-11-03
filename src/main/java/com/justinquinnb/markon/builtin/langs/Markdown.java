@@ -60,7 +60,7 @@ public class Markdown implements MarkupLanguage {
     }
 
     public static ItalicText parseItalic(String italicText) {
-        return new ItalicText(0, italicText.substring(1, italicText.length() - 1));
+        return new ItalicText(italicText.substring(1, italicText.length() - 1));
     }
 
     public static String applyHeader(AbstractContent headerText) {
@@ -73,6 +73,6 @@ public class Markdown implements MarkupLanguage {
         while (headingText.charAt(level) == '#') {
             level++;
         }
-        return new HeadingText(0, headingText.substring(level + 1), level);
+        return new HeadingText(headingText.substring(level + 1), level);
     }
 }
