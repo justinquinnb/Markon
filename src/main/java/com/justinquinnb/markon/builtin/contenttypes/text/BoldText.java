@@ -6,6 +6,6 @@ package com.justinquinnb.markon.builtin.contenttypes.text;
 public class BoldText extends FormattedText {
 
     public BoldText(int startIndex, String digestedString) {
-        super(startIndex, digestedString);
+        super(digestedString);
     }
 }

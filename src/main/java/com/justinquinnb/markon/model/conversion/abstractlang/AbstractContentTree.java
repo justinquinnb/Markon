@@ -13,6 +13,8 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
     private AbstractContent data;
     private PriorityQueue<AbstractContentTree> children = new PriorityQueue<>();
 
+    private boolean wasVisited = false;
+
     /**
      * Creates a new {@code AbstractContentTree} with the given parent, data, and children.
      *
@@ -86,6 +88,14 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
         this.children = children;
     }
 
+    public boolean wasVisited() {
+        return this.wasVisited;
+    }
+
+    public void setVisited(boolean visited) {
+        this.wasVisited = visited;
+    }
+
     public void addChild(AbstractContentTree child) {
         children.add(child);
     }
@@ -114,15 +124,17 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
     /**
      * Adjusts {@code this} tree where necessary to reflect a change in one of its node's strings.
      *
-     * @param shiftOrigin the start index of the substring that was changed
+     * @param substringStart the start index of the substring that was changed
      * @param oldLength the length of the original, unchanged substring
      * @param newString the new, changed substring
      */
-    public void adjust(int shiftOrigin, int oldLength, String newString) {
-        this.data.adjust(shiftOrigin, oldLength, newString);
+    public void adjust(int substringStart, int oldLength, String newString) {
+        this.data.adjust(substringStart, oldLength, newString);
 
         for (AbstractContentTree child : this.getChildren()) {
-            child.adjust(shiftOrigin, oldLength, newString);
+            if (!child.wasVisited()) {
+                child.adjust(substringStart, oldLength, newString);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.justinquinnb.markon.model.conversion.application;
 
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
+import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -28,6 +29,11 @@ public class ApplicationRuleset implements
         Function<String, String> postProcessor
     ) {
         this.ruleset = ruleset;
+
+        if (!ruleset.containsKey(Document.class)) {
+            this.ruleset.put(Document.class, ApplicationRuleset::toUnboundedDoc);
+        }
+
         this.postProcessor = postProcessor;
     }
 
@@ -40,6 +46,9 @@ public class ApplicationRuleset implements
         LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset
     ) {
         this.ruleset = ruleset;
+        if (!ruleset.containsKey(Document.class)) {
+            this.ruleset.put(Document.class, ApplicationRuleset::toUnboundedDoc);
+        }
     }
 
     /**
@@ -49,6 +58,15 @@ public class ApplicationRuleset implements
      */
     private String doNothing(String text) {
         return text;
+    }
+
+    /**
+     * The default rule applied to {@link Document}-type content.
+     * @param content the content to process
+     * @return the content with no markup applied
+     */
+    private static String toUnboundedDoc(AbstractContent content) {
+        return content.getDigestedString();
     }
 
     /**

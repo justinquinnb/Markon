@@ -103,7 +103,7 @@ public class BasicParser implements MarkupParser {
             logger.trace("Determining placement of content:\n{}", currentContent);
             while(!foundSpot && i < possibleParents.size()) {
                 AbstractContentTree possibleParent = possibleParents.get(i);
-                logger.trace("Checking parent:\n{}", possibleParent);
+                logger.trace("Checking parent:\n{}", possibleParent.getData());
 
                 // Which is determined as the node that surrounds the current piece
                 if (possibleParent.getData().surrounds(currentContent)) {
@@ -118,7 +118,7 @@ public class BasicParser implements MarkupParser {
             }
         }
 
-        logger.trace("Tree built.");
+        logger.trace("Tree built. Document root:\n{}", root.getData());
         return root;
     }
 }

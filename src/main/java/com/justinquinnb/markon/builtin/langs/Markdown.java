@@ -28,8 +28,8 @@ public class Markdown implements MarkupLanguage {
             > applicationRuleset = new LinkedHashMap<>();
 
     static {
-        parsingRuleset.put(Pattern.compile("(\\*\\*|__)([^_*\\r\\n]+?)\\1"), Markdown::parseBold);
-        parsingRuleset.put(Pattern.compile("([*_])([^_*\\r\\n]+?)\\1"), Markdown::parseItalic);
+        parsingRuleset.put(Pattern.compile("(?<!(\\*|_))(\\*\\*|__)(.+?)((\\2)(?!(\\*|_)))"), Markdown::parseBold);
+        parsingRuleset.put(Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)"), Markdown::parseItalic);
         parsingRuleset.put(Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE), Markdown::parseHeading);
 
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
@@ -65,7 +65,7 @@ public class Markdown implements MarkupLanguage {
 
     public static String applyHeader(AbstractContent headerText) {
         HeadingText header = (HeadingText)headerText;
-        return "#".repeat(header.getLevel()) + " " + header.getDigestedString() + "  \n";
+        return "#".repeat(header.getLevel()) + " " + header.getDigestedString();
     }
 
     public static HeadingText parseHeading(String headingText) {
@@ -73,6 +73,6 @@ public class Markdown implements MarkupLanguage {
         while (headingText.charAt(level) == '#') {
             level++;
         }
-        return new HeadingText(0, headingText.substring(level), level);
+        return new HeadingText(0, headingText.substring(level + 1), level);
     }
 }

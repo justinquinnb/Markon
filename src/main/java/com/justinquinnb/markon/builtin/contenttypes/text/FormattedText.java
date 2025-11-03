@@ -7,8 +7,8 @@ import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
  */
 public abstract class FormattedText extends AbstractContent {
 
-    public FormattedText(int startIndex, String digestedString) {
-        super(startIndex, digestedString);
+    public FormattedText(String digestedString) {
+        super(digestedString);
     }
     // Nothing yet, merely for grouping right now
 }

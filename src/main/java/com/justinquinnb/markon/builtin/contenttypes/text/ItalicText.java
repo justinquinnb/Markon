@@ -5,7 +5,7 @@ package com.justinquinnb.markon.builtin.contenttypes.text;
  */
 public class ItalicText extends FormattedText {
 
-    public ItalicText(int startIndex, String digestedString) {
-        super(startIndex, digestedString);
+    public ItalicText(String digestedString) {
+        super(digestedString);
     }
 }
