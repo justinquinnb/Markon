@@ -99,11 +99,10 @@ public class BasicParser implements MarkupParser {
             AbstractContent currentContent = content.poll();
 
             boolean foundSpot = false;
-            int i = 0;
 
-            // Locate its parent
+            // Search backwards through possible parents to find the most specific (deepest) match
             logger.trace("Determining placement of content:\n{}", currentContent);
-            while(!foundSpot && i < possibleParents.size()) {
+            for (int i = possibleParents.size() - 1; i >= 0 && !foundSpot; i--) {
                 AbstractContentTree possibleParent = possibleParents.get(i);
                 logger.trace("Checking parent:\n{}", possibleParent.getData());
 
@@ -116,7 +115,6 @@ public class BasicParser implements MarkupParser {
                     possibleParents.add(newNode);
                     foundSpot = true;
                 }
-                i++;
             }
         }
 
