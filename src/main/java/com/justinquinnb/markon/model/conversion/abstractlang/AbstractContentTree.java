@@ -153,4 +153,65 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
     public int compareTo(AbstractContentTree o) {
         return Integer.compare(o.getData().getStartIndex(), this.getData().getStartIndex());
     }
+
+    /**
+     * Prints a pretty representation of {@code this} tree.
+     *
+     * @return a vertical, left-justified representation of the tree
+     * @author <a href="https://www.baeldung.com/java-print-binary-tree-diagram">...</a>
+     */
+    @Override
+    public String toString() {
+        if (data == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(data.getDigestedString());
+
+        List<AbstractContentTree> childList = new ArrayList<>(children);
+        int numOfChildren = childList.size();
+
+        for (int i = 0; i < numOfChildren; i++) {
+            AbstractContentTree child = childList.get(i);
+            boolean isLastChild = i == (numOfChildren - 1);
+            String prefix = isLastChild ?
+                (RIGHT + HORIZONTAL.repeat(PREFIX_SIZE - 1)) :
+                (TEE + HORIZONTAL.repeat(PREFIX_SIZE - 1));
+            traverseNodes(sb, "", prefix, child, !isLastChild);
+        }
+
+        return sb.toString();
+    }
+
+    private void traverseNodes(StringBuilder sb, String padding, String prefix,
+        AbstractContentTree node, boolean hasAnotherSibling
+    ) {
+        if (node == null) {
+            return;
+        }
+
+        sb.append("\n");
+        sb.append(padding);
+        sb.append(prefix);
+        sb.append(node.data.toShortString());
+
+        // Build padding for children
+        String childPadding = padding +
+            (hasAnotherSibling ?
+                (VERTICAL + SPACE.repeat(PREFIX_SIZE - 1)) :
+                SPACE.repeat(PREFIX_SIZE));
+
+        List<AbstractContentTree> childList = new ArrayList<>(node.getChildren());
+        int numOfChildren = childList.size();
+
+        for (int i = 0; i < numOfChildren; i++) {
+            AbstractContentTree child = childList.get(i);
+            boolean isLastChild = i == (numOfChildren - 1);
+            String childPrefix = isLastChild ?
+                (RIGHT + HORIZONTAL.repeat(PREFIX_SIZE - 1)) :
+                (TEE + HORIZONTAL.repeat(PREFIX_SIZE - 1));
+            traverseNodes(sb, childPadding, childPrefix, child, !isLastChild);
+        }
+    }
 }

@@ -220,6 +220,15 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         return false;
     }
 
+    /**
+     * Gets a short string representation of {@code this} content.
+     * @return a short string representation of {@code this} content of format
+     * {@code className: digestedString}
+     */
+    public String toShortString() {
+        return this.getClass().getSimpleName() + ": " + this.digestedString;
+    }
+
     @Override
     public String toString() {
         return "{\ntype=" + this.getClass().getSimpleName() + ",\nstartIndex=" + this.startIndex +
