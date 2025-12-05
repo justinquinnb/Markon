@@ -2,11 +2,8 @@ package com.justinquinnb.markon.builtin.converters;
 
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
-import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
 import com.justinquinnb.markon.model.conversion.application.MarkupApplier;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +47,10 @@ public class BasicApplier implements MarkupApplier {
         int oldLength = oldString.length();
 
         if (subTree.getParent() != null) {
-            logger.trace("Marked as completed:\n{}", subTree.getData());
+            logger.trace("Marked as completed.");
             subTree.setVisited(true);
             wholeTree.adjust(currentNode.getStartIndex(), oldLength, newString);
         }
+        logger.trace("Application complete.\n");
     }
 }

@@ -9,9 +9,17 @@ import java.util.PriorityQueue;
  * A language-agnostic representation of formatted, text-centric content.
  */
 public class AbstractContentTree implements Comparable<AbstractContentTree> {
+    // Prefix pieces
+    private static final String VERTICAL = "│";
+    private static final String HORIZONTAL = "─";
+    private static final String RIGHT = "└";
+    private static final String TEE = "├";
+    private static final String SPACE = " ";
+    private static final int PREFIX_SIZE = 3;
+
     private AbstractContentTree parent;
     private AbstractContent data;
-    private PriorityQueue<AbstractContentTree> children = new PriorityQueue<>();
+    private PriorityQueue<AbstractContentTree> children;
 
     private boolean wasVisited = false;
 

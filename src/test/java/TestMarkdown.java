@@ -8,18 +8,18 @@ import org.junit.jupiter.api.Test;
  * Tests the Markdown language
  */
 public class TestMarkdown {
-//    @Test
-//    public void givenMarkdown_whenParsed_thenPlainText() {
-//        String markdown = "***Hello* world**. *Hi!* ***What's up?***";
-//        String plainText = "Hello world. Hi! What's up?";
-//
-//        BasicParser parser = new BasicParser();
-//        Markdown lang = new Markdown();
-//        AbstractContentTree contentTree = parser.parse(markdown, lang.getParsingRuleset());
-//        String parsedText = contentTree.getData().getDigestedString();
-//        System.out.println(parsedText);
-//        assert parsedText.equals(plainText);
-//    }
+    @Test
+    public void givenMarkdown_whenParsed_thenPlainText() {
+        String markdown = "***Hello* world**. *Hi!* ***What's up?***";
+        String plainText = "Hello world. Hi! What's up?";
+
+        BasicParser parser = new BasicParser();
+        Markdown lang = new Markdown();
+        AbstractContentTree contentTree = parser.parse(markdown, lang.getParsingRuleset());
+        String parsedText = contentTree.getData().getDigestedString();
+        System.out.println(parsedText);
+        assert parsedText.equals(plainText);
+    }
 
     @Test
     public void givenPlainText_whenMarkedUp_thenMarkdown() {

@@ -86,6 +86,25 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
     }
 
     /**
+     * Determines whether {@code this} content is surrounded by the given indices.
+     * @param startIndex the start index to check for
+     * @param endIndex the end index to check for
+     * @return if {@code this} content is surrounded by the given indices
+     */
+    public boolean isSurroundedBy(int startIndex, int endIndex) {
+        return startIndex >= this.getStartIndex() && this.getEndIndex() <= endIndex;
+    }
+
+    /**
+     * Determines whether {@code this} content is surrounded by the given {@code content}.
+     * @param content the content to check
+     * @return if {@code this} content is surrounded by the given content
+     */
+    public boolean isSurroundedBy(AbstractContent content) {
+        return isSurroundedBy(content.getStartIndex(), content.getEndIndex());
+    }
+
+    /**
      * Adjusts all surrounding content to reflect the new, digested substring.
      *
      * @param surroundings the surrounding content to adjust
@@ -96,9 +115,13 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
     public static void adjustSurroundings(
         Collection<AbstractContent> surroundings, int startOfTarget, int oldLength, String newString
     ) {
-        logger.trace("Adjusting surroundings...");
         for (AbstractContent c : surroundings) {
-            c.adjustIfNeeded(startOfTarget, oldLength, newString);
+            boolean changesMade = c.adjustIfNeeded(startOfTarget, oldLength, newString);
+            if (changesMade) {
+                logger.trace("This content has been adjusted to:\n{}", c);
+            } else {
+                logger.trace("No adjustments made to this content.");
+            }
         }
         logger.trace("All surroundings adjusted.");
     }
@@ -109,8 +132,10 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * @param startOfTarget the start index of the substring being replaced
      * @param oldLength the length of the original, non-digested substring
      * @param newString the new, digested substring
+     *
+     * @return {@code true} if an adjustment was made, else {@code false}
      */
-    public void adjustIfNeeded(int startOfTarget, int oldLength, String newString) {
+    public boolean adjustIfNeeded(int startOfTarget, int oldLength, String newString) {
         /*
         Multiple cases:
 
@@ -119,9 +144,9 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         3. This content starts before the start of the subject and ends after the end of the original substring
          */
 
-        logger.trace("Checking if content requires adjustment...");
-        logger.trace("Context: startOfTarget={}, oldLength={}, newString={}, lookingAtContent=\n{}",
-            startOfTarget, oldLength, newString, this);
+        logger.trace("Checking if the following requires adjustment, given context: "
+            + "startOfTarget={}, oldLength={}, newString={}"
+            + "\nlookingAtContent={}", startOfTarget, oldLength, newString, this);
 
         int oldEnd = startOfTarget + oldLength - 1; // Last index of the subject substring
         int newEnd = startOfTarget + newString.length() - 1; // Last index of the new substring
@@ -132,22 +157,22 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         // Case 1 - This string is unaffected by the replacement
         if (thisEnd < startOfTarget) {
             logger.trace("This content is unaffected by the replacement.");
+            return false;
         }
 
         // Case 2 - Shift this according to the difference in new string and old string lengths
-        boolean changesMade = false;
         if (oldEnd < thisStart) {
             // Calculate the difference between the old and new string lengths
             int difference = newEnd - oldEnd;
             logger.trace("This content starts (at {}) after the original string's end (at {}), so shifting by: {}",
                 thisStart, oldEnd, difference);
             this.shiftStartIndex(difference);
-            changesMade = true;
+            return true;
         }
 
         // Case 3 - This content surrounds the original
         // Replace original substring as it appears within this content with the new substring
-        if (this.surrounds(startOfTarget, oldEnd)) {
+        if (this.surrounds(startOfTarget, oldEnd) || this.isSurroundedBy(startOfTarget, newEnd)) {
             // If complete replacement, skip splicing
             if (thisStart == startOfTarget && thisEnd == oldEnd) {
                 logger.trace("This content (spanning [{},{}]) is entirely replaced by the new "
@@ -160,12 +185,26 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
                     thisStart, thisEnd, startOfTarget, oldEnd);
 
                 // Get this content's text up until the index immediately before the old substring
-                String leftPart = this.digestedString.substring(0, startOfTarget);
-                logger.trace("Text left of original substring:\n{}", leftPart);
+                logger.trace("Left text spans, relative: [{},{}]", 0
+                    , (startOfTarget != thisStart) ? startOfTarget : 0);
+                String leftPart = "";
+                if (startOfTarget > thisStart) {
+                    leftPart = this.digestedString.substring(0, startOfTarget - thisStart);
+                    logger.trace("Left text:\n{}", leftPart);
+                } else {
+                    logger.trace("No left text.");
+                }
 
                 // Get this content's text after the index immediately following the old substring
-                String rightPart = this.digestedString.substring(oldEnd + 1);
-                logger.trace("Text right of original substring:\n{}", rightPart);
+                int rightStart = (oldEnd + 1) - thisStart; // Convert to relative index
+                logger.trace("Right text spans, relative: [{},{}]", rightStart, this.digestedString.length() - 1);
+                String rightPart = "";
+                if (rightStart < this.digestedString.length()) {
+                    rightPart = this.digestedString.substring(rightStart);
+                    logger.trace("Right text:\n{}", rightPart);
+                } else {
+                    logger.trace("No right text.");
+                }
 
                 // Wrap the new string with the original pieces around the old substring
                 String newDigestedString = leftPart + newString + rightPart;
@@ -175,14 +214,10 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
                     newDigestedString);
                 this.setDigestedString(newDigestedString);
             }
-            changesMade = true;
+            return true;
         }
 
-        if (changesMade) {
-            logger.trace("This content has been adjusted to:\n{}", this);
-        } else {
-            logger.trace("No adjustments made to this content.");
-        }
+        return false;
     }
 
     @Override
