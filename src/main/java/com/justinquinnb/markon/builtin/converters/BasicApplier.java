@@ -55,6 +55,6 @@ public class BasicApplier implements MarkupApplier {
             subTree.setVisited(true);
             wholeTree.adjust(currentNode.getStartIndex(), oldLength, newString);
         }
-        logger.trace("Application complete.\n");
+        logger.trace("Application complete.");
     }
 }

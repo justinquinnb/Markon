@@ -161,7 +161,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         }
 
         // Case 2 - This content comes after the adjusted string
-        if (oldEnd < thisStart) {
+        if (oldEnd < thisStart || startOfTarget < thisStart) {
             // Calculate the difference between the old and new string lengths
             int difference = newEnd - oldEnd;
             logger.trace("This content starts (at {}) after the original string's end (at {}), so shifting by: {}",
@@ -172,9 +172,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
 
         // Case 3 - This content surrounds the original
         // Replace original substring as it appears within this content with the new substring
-        boolean thisSurroundsOld = this.surrounds(startOfTarget, oldEnd);
-        boolean oldSurroundedThis = this.isSurroundedBy(startOfTarget, newEnd);
-        if (thisSurroundsOld || oldSurroundedThis) {
+        if (this.surrounds(startOfTarget, oldEnd)) {
             // If complete replacement, skip splicing
             if (thisStart == startOfTarget && thisEnd == oldEnd) {
                 logger.trace("This content (spanning [{},{}]) is entirely replaced by the new "
@@ -182,16 +180,9 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
                     thisStart, thisEnd, startOfTarget, oldEnd);
                 this.setDigestedString(newString);
             } else {
-                if (thisSurroundsOld) {
-                    logger.trace("This content (spanning [{},{}]) surrounds the original string "
-                            + "(spanning [{},{}]), so splicing the new string into this content's original surroundings...",
-                        thisStart, thisEnd, startOfTarget, oldEnd);
-                } else if (oldSurroundedThis) {
-                    logger.trace("This content (spanning [{},{}]) is surrounded by the "
-                            + "new string (spanning [{},{}]), so splicing this content into the new "
-                            + "surroundings...",
-                        thisStart, thisEnd, startOfTarget, newEnd);
-                }
+                logger.trace("This content (spanning [{},{}]) surrounds the original string "
+                        + "(spanning [{},{}]), so splicing the new string into this content's original surroundings...",
+                    thisStart, thisEnd, startOfTarget, oldEnd);
 
                 // Get this content's text up until the index immediately before the old substring
                 logger.trace("Left text spans, relative: [{},{}]", 0

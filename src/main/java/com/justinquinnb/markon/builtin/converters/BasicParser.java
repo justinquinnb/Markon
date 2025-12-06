@@ -123,7 +123,7 @@ public class BasicParser implements MarkupParser {
             }
         }
 
-        logger.trace("Tree built. Document root:\n{}", root.getData());
+        logger.trace("Parsing complete.");
         return root;
     }
 }
