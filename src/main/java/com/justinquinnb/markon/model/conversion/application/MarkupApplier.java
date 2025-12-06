@@ -1,5 +1,6 @@
 package com.justinquinnb.markon.model.conversion.application;
 
+import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 
 /**
@@ -18,4 +19,17 @@ public interface MarkupApplier {
      * the provided {@code ruleset}
      */
     public String apply(AbstractContentTree tree, ApplicationRuleset ruleset);
+
+    /**
+     * Applies the desired markup rules to the content provided in the abstract content
+     * {@code tree}, producing marked-up text.
+     *
+     * @param tree the abstract content tree to generate marked-up text from
+     * @param language the markup language to output the {@code tree}'s content in
+     * @return the {@code AbstractContentTree} represented by text in the markup language defined by
+     * the provided {@code ruleset}
+     */
+    public default String apply(AbstractContentTree tree, MarkupLanguage language) {
+        return apply(tree, language.getApplicationRuleset());
+    }
 }
