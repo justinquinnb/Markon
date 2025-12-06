@@ -28,12 +28,12 @@ public class Markdown implements MarkupLanguage {
             > applicationRuleset = new LinkedHashMap<>();
 
     static {
+        parsingRuleset.put(Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE), Markdown::parseHeading);
         parsingRuleset.put(Pattern.compile("(?<!(\\*|_))(\\*\\*|__)(.+?)((\\2)(?!(\\*|_)))"), Markdown::parseBold);
         parsingRuleset.put(Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)"), Markdown::parseItalic);
-        parsingRuleset.put(Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE), Markdown::parseHeading);
 
-        applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
+        applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeader);
     }
 

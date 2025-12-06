@@ -47,7 +47,7 @@ public class BasicApplier implements MarkupApplier {
 
         // Apply the markup
         String newString = markupApplier.apply(currentNode);
-        logger.trace("Markup applied to produce: {}", newString);
+        logger.trace("Markup applied to produce:\n{}", newString);
         int oldLength = oldString.length();
 
         if (subTree.getParent() != null) {

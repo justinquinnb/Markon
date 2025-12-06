@@ -136,14 +136,6 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * @return {@code true} if an adjustment was made, else {@code false}
      */
     public boolean adjustIfNeeded(int startOfTarget, int oldLength, String newString) {
-        /*
-        Multiple cases:
-
-        1. This content ends completely before the start of the subject
-        2. This content starts completely after the end of the original substring (>= startOfSubject + oldLength)
-        3. This content starts before the start of the subject and ends after the end of the original substring
-         */
-
         int oldEnd = startOfTarget + oldLength - 1; // Last index of the subject substring
         int newEnd = startOfTarget + newString.length() - 1; // Last index of the new substring
 
@@ -177,7 +169,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
             if (thisStart == startOfTarget && thisEnd == oldEnd) {
                 logger.trace("This content (spanning [{},{}]) is entirely replaced by the new "
                         + "string (spanning [{},{}]), so replacing this content's string entirely...",
-                    thisStart, thisEnd, startOfTarget, oldEnd);
+                    thisStart, thisEnd, startOfTarget, newEnd);
                 this.setDigestedString(newString);
             } else {
                 logger.trace("This content (spanning [{},{}]) surrounds the original string "
