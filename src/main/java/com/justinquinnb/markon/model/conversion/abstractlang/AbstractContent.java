@@ -92,7 +92,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * @return if {@code this} content is surrounded by the given indices
      */
     public boolean isSurroundedBy(int startIndex, int endIndex) {
-        return startIndex >= this.getStartIndex() && this.getEndIndex() <= endIndex;
+        return startIndex <= this.getStartIndex() && this.getEndIndex() <= endIndex;
     }
 
     /**
@@ -144,12 +144,12 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         3. This content starts before the start of the subject and ends after the end of the original substring
          */
 
-        logger.trace("Checking if the following requires adjustment, given context: "
-            + "startOfTarget={}, oldLength={}, newString={}"
-            + "\nlookingAtContent={}", startOfTarget, oldLength, newString, this);
-
         int oldEnd = startOfTarget + oldLength - 1; // Last index of the subject substring
         int newEnd = startOfTarget + newString.length() - 1; // Last index of the new substring
+
+        logger.trace("Checking if the following requires adjustment, given context: "
+            + "startOfTarget={}, oldEnd={}, newEnd={}, newString={}"
+            + "\nlookingAtContent={}", startOfTarget, oldEnd, newEnd, newString, this);
 
         int thisStart = this.getStartIndex(); // First index of this substring
         int thisEnd = this.getEndIndex(); // Last index of this substring
@@ -160,7 +160,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
             return false;
         }
 
-        // Case 2 - Shift this according to the difference in new string and old string lengths
+        // Case 2 - This content comes after the adjusted string
         if (oldEnd < thisStart) {
             // Calculate the difference between the old and new string lengths
             int difference = newEnd - oldEnd;
@@ -172,17 +172,26 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
 
         // Case 3 - This content surrounds the original
         // Replace original substring as it appears within this content with the new substring
-        if (this.surrounds(startOfTarget, oldEnd) || this.isSurroundedBy(startOfTarget, newEnd)) {
+        boolean thisSurroundsOld = this.surrounds(startOfTarget, oldEnd);
+        boolean oldSurroundedThis = this.isSurroundedBy(startOfTarget, newEnd);
+        if (thisSurroundsOld || oldSurroundedThis) {
             // If complete replacement, skip splicing
             if (thisStart == startOfTarget && thisEnd == oldEnd) {
                 logger.trace("This content (spanning [{},{}]) is entirely replaced by the new "
-                    + "string (spanning [{},{}]), so replacing this content's string entirely...",
+                        + "string (spanning [{},{}]), so replacing this content's string entirely...",
                     thisStart, thisEnd, startOfTarget, oldEnd);
                 this.setDigestedString(newString);
             } else {
-                logger.trace("This content (spanning [{},{}]) surrounds the original string "
-                        + "(spanning [{},{}]), so splicing new into original surroundings...",
-                    thisStart, thisEnd, startOfTarget, oldEnd);
+                if (thisSurroundsOld) {
+                    logger.trace("This content (spanning [{},{}]) surrounds the original string "
+                            + "(spanning [{},{}]), so splicing the new string into this content's original surroundings...",
+                        thisStart, thisEnd, startOfTarget, oldEnd);
+                } else if (oldSurroundedThis) {
+                    logger.trace("This content (spanning [{},{}]) is surrounded by the "
+                            + "new string (spanning [{},{}]), so splicing this content into the new "
+                            + "surroundings...",
+                        thisStart, thisEnd, startOfTarget, newEnd);
+                }
 
                 // Get this content's text up until the index immediately before the old substring
                 logger.trace("Left text spans, relative: [{},{}]", 0
