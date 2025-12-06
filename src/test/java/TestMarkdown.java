@@ -15,6 +15,7 @@ public class TestMarkdown {
 
     @Test
     public void givenMarkdown_whenParsed_thenPlainText() {
+        System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Hello world. Hi! What's up?";
 
@@ -29,6 +30,7 @@ public class TestMarkdown {
 
     @Test
     public void givenMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
+        System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
 
         BasicParser parser = new BasicParser();
@@ -42,6 +44,7 @@ public class TestMarkdown {
 
     @Test
     public void givenMultilineMarkdown_whenParsed_thenPlainText() {
+        System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Awesome Header\nHello world. Hi! What's up?";
 
@@ -56,6 +59,7 @@ public class TestMarkdown {
 
     @Test
     public void givenMultilineMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
+        System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
 
         BasicParser parser = new BasicParser();
