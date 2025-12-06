@@ -32,12 +32,15 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern headingPattern = Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)(.+?)((\\2)(?!([*_])))");
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)");
+    private static final Pattern lineBreakPattern = Pattern.compile("(\\s{2})|(<(\\s*)br>(\\s*))$", Pattern.MULTILINE);
 
     static {
         parsingRuleset.put(headingPattern, Markdown::parseHeading);
         parsingRuleset.put(boldPattern, Markdown::parseBold);
         parsingRuleset.put(italicPattern, Markdown::parseItalic);
+        parsingRuleset.put(lineBreakPattern, Markdown::parseLineBreak);
 
+        applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeader);
@@ -51,6 +54,14 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return new ParsingRuleset(parsingRuleset);
+    }
+
+    public static String applyLineBreak(AbstractContent lineBreak) {
+        return "  ";
+    }
+
+    public static LineBreak parseLineBreak(String lineBreak) {
+        return new LineBreak();
     }
 
     public static String applyBold(AbstractContent boldText) {
