@@ -12,54 +12,91 @@ import org.slf4j.LoggerFactory;
  */
 public class TestMarkdown {
     private static final Logger logger = LoggerFactory.getLogger(TestMarkdown.class);
+    private static final BasicParser parser = new BasicParser();
+    private static final BasicApplier applier = new BasicApplier();
+    private static final MarkupLanguage lang = new Markdown();
 
     @Test
-    public void givenMarkdown_whenParsed_thenPlainText() {
+    public void givenMarkdownBoldSingleLine_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "***Hello* world**. *Hi!* ***What's up?***";
-        String plainText = "Hello world. Hi! What's up?";
+        String markdown ="**Hello** world!";
+        String plainText = "Hello world!";
 
-        BasicParser parser = new BasicParser();
-        MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
         assert parsedText.equals(plainText);
     }
 
     @Test
-    public void givenMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
+    public void givenMarkdownItalicSingleLine_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="*Hello* world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMarkdownHeadingSingleLine_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="### Hello world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMarkdownLineBreakSingleLine_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!<br>";
+        String plainText = "Hello world!\n";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMarkdownMixedSingleLine_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "***Hello* world**. *Hi!* ***What's up?***";
+        String plainText = "Hello world. Hi! What's up?";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMarkdownMixedSingleLine_whenParsedAndMarkedUp_thenMarkdown() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
 
-        BasicParser parser = new BasicParser();
-        BasicApplier applier = new BasicApplier();
-        MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String markedUpText = applier.apply(contentTree, lang);
         assert markedUpText.equals(markdown);
     }
 
     @Test
-    public void givenMultilineMarkdown_whenParsed_thenPlainText() {
+    public void givenMultiLineMarkdownMixedMultiLine_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Awesome Header\nHello world. Hi! What's up?";
 
-        BasicParser parser = new BasicParser();
-        MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
         assert parsedText.equals(plainText);
     }
 
     @Test
-    public void givenMultilineMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
+    public void givenMultiLineMarkdownMixedMultiLine_whenParsedAndMarkedUp_thenMarkdown() {
         System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
 
-        BasicParser parser = new BasicParser();
-        BasicApplier applier = new BasicApplier();
-        MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String markedUpText = applier.apply(contentTree, lang);
         assert markedUpText.equals(markdown);
