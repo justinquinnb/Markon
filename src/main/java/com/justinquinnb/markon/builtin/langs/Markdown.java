@@ -3,6 +3,7 @@ package com.justinquinnb.markon.builtin.langs;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
+import com.justinquinnb.markon.builtin.contenttypes.text.LineBreak;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
@@ -27,10 +28,15 @@ public class Markdown implements MarkupLanguage {
             Function<AbstractContent, String>
             > applicationRuleset = new LinkedHashMap<>();
 
+    // REGEX
+    private static final Pattern headingPattern = Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE);
+    private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)(.+?)((\\2)(?!([*_])))");
+    private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)");
+
     static {
-        parsingRuleset.put(Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE), Markdown::parseHeading);
-        parsingRuleset.put(Pattern.compile("(?<!(\\*|_))(\\*\\*|__)(.+?)((\\2)(?!(\\*|_)))"), Markdown::parseBold);
-        parsingRuleset.put(Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)"), Markdown::parseItalic);
+        parsingRuleset.put(headingPattern, Markdown::parseHeading);
+        parsingRuleset.put(boldPattern, Markdown::parseBold);
+        parsingRuleset.put(italicPattern, Markdown::parseItalic);
 
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
