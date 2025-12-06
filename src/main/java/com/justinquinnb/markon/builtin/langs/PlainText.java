@@ -3,6 +3,7 @@ package com.justinquinnb.markon.builtin.langs;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
+import com.justinquinnb.markon.builtin.contenttypes.text.LineBreak;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
@@ -28,7 +29,8 @@ public class PlainText implements MarkupLanguage {
     static {
         applicationRuleset.put(BoldText.class, PlainText::applyBold);
         applicationRuleset.put(ItalicText.class, PlainText::applyItalic);
-        applicationRuleset.put(HeadingText.class, PlainText::applyHeader);
+        applicationRuleset.put(HeadingText.class, PlainText::applyHeading);
+        applicationRuleset.put(LineBreak.class, PlainText::applyLineBreak);
     }
 
     private static String applyBold(AbstractContent boldText) {
@@ -39,8 +41,13 @@ public class PlainText implements MarkupLanguage {
         return "*" + italicText.getDigestedString() + "*";
     }
 
-    private static String applyHeader(AbstractContent headerText) {
-        return headerText.getDigestedString() + "\n";
+    private static String applyHeading(AbstractContent headingText) {
+        int numDashes = (((HeadingText)headingText).getLevel() * -1) + 7;
+        return "-".repeat(numDashes) + headingText.getDigestedString() + "-".repeat(numDashes);
+    }
+
+    private static String applyLineBreak(AbstractContent lineBreakText) {
+        return "\n";
     }
 
     @Override
