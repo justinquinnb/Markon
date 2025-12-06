@@ -28,7 +28,7 @@ public class PlainText implements MarkupLanguage {
     static {
         applicationRuleset.put(BoldText.class, PlainText::applyBold);
         applicationRuleset.put(ItalicText.class, PlainText::applyItalic);
-        applicationRuleset.put(HeadingText.class, PlainText::applyHeader);
+        applicationRuleset.put(HeadingText.class, PlainText::applyHeading);
     }
 
     private static String applyBold(AbstractContent boldText) {
@@ -39,8 +39,10 @@ public class PlainText implements MarkupLanguage {
         return "*" + italicText.getDigestedString() + "*";
     }
 
-    private static String applyHeader(AbstractContent headerText) {
-        return headerText.getDigestedString() + "\n";
+    private static String applyHeading(AbstractContent headingText) {
+        int numDashes = (((HeadingText)headingText).getLevel() * -1) + 7;
+        return "-".repeat(numDashes) + headingText.getDigestedString() + "-".repeat(numDashes);
+    }
     }
 
     @Override
