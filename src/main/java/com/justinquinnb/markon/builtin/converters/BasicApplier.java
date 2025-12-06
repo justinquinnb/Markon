@@ -40,14 +40,20 @@ public class BasicApplier implements MarkupApplier {
         AbstractContent currentNode = subTree.getData();
         String oldString = currentNode.getDigestedString();
 
-        logger.trace("Leaf found. Applying {} markup to:\n{}",
+        logger.trace("Leaf found. Attempting to apply {} markup to:\n{}",
             currentNode.getClass().getSimpleName(), currentNode);
         Function<AbstractContent, String> markupApplier = ruleset
             .getApplicationRuleset().get(currentNode.getClass());
 
         // Apply the markup
-        String newString = markupApplier.apply(currentNode);
-        logger.trace("Markup applied to produce:\n{}", newString);
+        String newString = currentNode.getDigestedString();
+        if (markupApplier != null) {
+            newString = markupApplier.apply(currentNode);
+            logger.trace("Markup applied to produce:\n{}", newString);
+        } else {
+            logger.trace("No application rule found, leaving as-is:\n{}", newString);
+        }
+
         int oldLength = oldString.length();
 
         if (subTree.getParent() != null) {
