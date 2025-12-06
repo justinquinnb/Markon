@@ -1,37 +1,69 @@
 import com.justinquinnb.markon.builtin.converters.BasicApplier;
 import com.justinquinnb.markon.builtin.converters.BasicParser;
 import com.justinquinnb.markon.builtin.langs.Markdown;
+import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests the Markdown language
  */
 public class TestMarkdown {
+    private static final Logger logger = LoggerFactory.getLogger(TestMarkdown.class);
+
     @Test
     public void givenMarkdown_whenParsed_thenPlainText() {
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Hello world. Hi! What's up?";
 
         BasicParser parser = new BasicParser();
-        Markdown lang = new Markdown();
-        AbstractContentTree contentTree = parser.parse(markdown, lang.getParsingRuleset());
+        MarkupLanguage lang = new Markdown();
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        logger.info("Content tree is:\n{}", contentTree);
         String parsedText = contentTree.getData().getDigestedString();
-        System.out.println(parsedText);
+        logger.info("Parsed text is:\n{}", parsedText);
         assert parsedText.equals(plainText);
     }
 
     @Test
-    public void givenPlainText_whenMarkedUp_thenMarkdown() {
+    public void givenMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
-        //markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
 
         BasicParser parser = new BasicParser();
         BasicApplier applier = new BasicApplier();
-        Markdown lang = new Markdown();
-        AbstractContentTree contentTree = parser.parse(markdown, lang.getParsingRuleset());
-        String markedUpText = applier.apply(contentTree, lang.getApplicationRuleset());
-        System.out.println(markedUpText);
+        MarkupLanguage lang = new Markdown();
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        logger.info("Content tree is:\n{}", contentTree);
+        String markedUpText = applier.apply(contentTree, lang);
+        assert markedUpText.equals(markdown);
+    }
+
+    @Test
+    public void givenMultilineMarkdown_whenParsed_thenPlainText() {
+        String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
+        String plainText = "Awesome Header\nHello world. Hi! What's up?";
+
+        BasicParser parser = new BasicParser();
+        MarkupLanguage lang = new Markdown();
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        logger.info("Content tree is:\n{}", contentTree);
+        String parsedText = contentTree.getData().getDigestedString();
+        logger.info("Parsed text is:\n{}", parsedText);
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultilineMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
+        String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
+
+        BasicParser parser = new BasicParser();
+        BasicApplier applier = new BasicApplier();
+        MarkupLanguage lang = new Markdown();
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        logger.info("Content tree is:\n{}", contentTree);
+        String markedUpText = applier.apply(contentTree, lang);
         assert markedUpText.equals(markdown);
     }
 }
