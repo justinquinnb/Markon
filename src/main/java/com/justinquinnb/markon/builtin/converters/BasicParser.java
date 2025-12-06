@@ -24,10 +24,15 @@ public class BasicParser implements MarkupParser {
 
     @Override
     public AbstractContentTree parse(String text, ParsingRuleset ruleset) {
-        String preparedText = ruleset.getPreProcessor().apply(text);
+        logger.trace("Applying preprocessor to:\n{}", text);
+        String preprocessedText = ruleset.getPreProcessor().apply(text);
 
-        PriorityQueue<AbstractContent> parsedContent = parseContent(preparedText, ruleset);
-        return buildTree(parsedContent);
+        logger.trace("Parsing all content from text...\n{}", preprocessedText);
+        PriorityQueue<AbstractContent> parsedContent = parseContent(preprocessedText, ruleset);
+        AbstractContentTree abstractContentTree = buildTree(parsedContent);
+
+        logger.trace("All content parsed to produce...\n{}", abstractContentTree);
+        return abstractContentTree;
     }
 
     /**
@@ -44,7 +49,6 @@ public class BasicParser implements MarkupParser {
 
         // The original text with all digestion applied up to any given moment
         String workingText = text;
-        logger.trace("Parsing all content...");
         for (Entry<Pattern, Function<String, ? extends AbstractContent>> rule : ruleset) {
             logger.trace("Applying rule for pattern: {}", rule.getKey().pattern());
             Matcher matcher = rule.getKey().matcher(workingText);

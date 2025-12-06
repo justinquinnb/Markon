@@ -22,9 +22,7 @@ public class TestMarkdown {
         BasicParser parser = new BasicParser();
         MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
-        logger.info("Content tree is:\n{}", contentTree);
         String parsedText = contentTree.getData().getDigestedString();
-        logger.info("Parsed text is:\n{}", parsedText);
         assert parsedText.equals(plainText);
     }
 
@@ -37,7 +35,6 @@ public class TestMarkdown {
         BasicApplier applier = new BasicApplier();
         MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
-        logger.info("Content tree is:\n{}", contentTree);
         String markedUpText = applier.apply(contentTree, lang);
         assert markedUpText.equals(markdown);
     }
@@ -51,9 +48,7 @@ public class TestMarkdown {
         BasicParser parser = new BasicParser();
         MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
-        logger.info("Content tree is:\n{}", contentTree);
         String parsedText = contentTree.getData().getDigestedString();
-        logger.info("Parsed text is:\n{}", parsedText);
         assert parsedText.equals(plainText);
     }
 
@@ -66,7 +61,6 @@ public class TestMarkdown {
         BasicApplier applier = new BasicApplier();
         MarkupLanguage lang = new Markdown();
         AbstractContentTree contentTree = parser.parse(markdown, lang);
-        logger.info("Content tree is:\n{}", contentTree);
         String markedUpText = applier.apply(contentTree, lang);
         assert markedUpText.equals(markdown);
     }

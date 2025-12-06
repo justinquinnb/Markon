@@ -13,11 +13,15 @@ public class BasicApplier implements MarkupApplier {
 
     @Override
     public String apply(AbstractContentTree tree, ApplicationRuleset ruleset) {
-        AbstractContentTree workingTree = tree; // TODO make this a deep copy first?
-        logger.trace("Applying all markup...");
-        recursiveApply(workingTree, workingTree, ruleset);
-        logger.trace("All markup applied.");
-        return workingTree.getData().getDigestedString();
+        logger.trace("Applying all markup to...\n{}", tree);
+        recursiveApply(tree, tree, ruleset);
+        String markedUpContent = tree.getData().getDigestedString();
+
+        logger.trace("Applying postprocessor to...\n{}", markedUpContent);
+        String postprocessedText = ruleset.getPostProcessor().apply(markedUpContent);
+
+        logger.trace("All markup applied to produce:\n{}", postprocessedText);
+        return postprocessedText;
     }
 
     private static void recursiveApply(

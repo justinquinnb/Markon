@@ -226,7 +226,8 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * {@code className: digestedString}
      */
     public String toShortString() {
-        return this.getClass().getSimpleName() + ": " + this.digestedString;
+        return this.getClass().getSimpleName() + " [" + this.startIndex + "," +
+            this.getEndIndex() + "]: " + this.digestedString;
     }
 
     @Override
