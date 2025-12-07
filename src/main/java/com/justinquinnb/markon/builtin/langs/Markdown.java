@@ -34,8 +34,8 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern headingPattern = Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)(.+?)((\\2)(?!([*_])))");
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)");
-    private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\n", Pattern.MULTILINE);
-    private static final Pattern blockQuoteTextPattern = Pattern.compile("/(^> (.*)$)(\\n^( *)(.*)$)*", Pattern.MULTILINE);
+    private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\\n", Pattern.MULTILINE);
+    private static final Pattern blockQuoteTextPattern = Pattern.compile("(^> (.*)$)(\\n^( *)(.*)\\n)*(^>( *))*", Pattern.MULTILINE);
 
     static {
         parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
