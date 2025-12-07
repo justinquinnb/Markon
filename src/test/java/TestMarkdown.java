@@ -17,7 +17,7 @@ public class TestMarkdown {
     private static final MarkupLanguage lang = new Markdown();
 
     @Test
-    public void givenMarkdownBoldSingleLine_whenParsed_thenParsed() {
+    public void givenSingleLineBoldMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="**Hello** world!";
         String plainText = "Hello world!";
@@ -28,7 +28,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMarkdownItalicSingleLine_whenParsed_thenParsed() {
+    public void givenSingleLineItalicMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="*Hello* world!";
         String plainText = "Hello world!";
@@ -39,7 +39,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMarkdownHeadingSingleLine_whenParsed_thenParsed() {
+    public void givenSingleLineHeadingMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="### Hello world!";
         String plainText = "Hello world!";
@@ -50,10 +50,10 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMarkdownLineBreakSingleLine_whenParsed_thenParsed() {
+    public void givenSingleLineLineBreakMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown ="Hello world!<br>";
-        String plainText = "Hello world!\n";
+        String markdown ="Hello world!<br>\n";
+        String plainText = "Hello world!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
@@ -61,7 +61,40 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMarkdownMixedSingleLine_whenParsed_thenParsed() {
+    public void givenMultilineLineLineBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!<br>\nGoodbye!";
+        String plainText = "Hello world!Goodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineBlockQuoteMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="> Hello world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineBlockQuoteMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="> Hello world!\n>\n> Goodbye!";
+        String plainText = "Hello world!\n\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Hello world. Hi! What's up?";
@@ -72,7 +105,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMarkdownMixedSingleLine_whenParsedAndMarkedUp_thenMarkdown() {
+    public void givenSingleLineMixedMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
 
@@ -82,7 +115,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMultiLineMarkdownMixedMultiLine_whenParsed_thenParsed() {
+    public void givenMultiLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
         String plainText = "Awesome Header\nHello world. Hi! What's up?";
@@ -93,7 +126,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMultiLineMarkdownMixedMultiLine_whenParsedAndMarkedUp_thenMarkdown() {
+    public void givenMultiLineMixedMarkdown_whenParsedAndMarkedUp_thenMarkdown() {
         System.out.println("-".repeat(160));
         String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
 

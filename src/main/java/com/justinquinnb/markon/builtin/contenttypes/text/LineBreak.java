@@ -8,6 +8,6 @@ import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 public class LineBreak extends AbstractContent {
 
     public LineBreak() {
-        super("\n");
+        super("");
     }
 }

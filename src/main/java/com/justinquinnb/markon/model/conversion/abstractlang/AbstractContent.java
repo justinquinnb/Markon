@@ -35,7 +35,7 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
      * @return the index of {@code this} content's last character
      */
     public int getEndIndex() {
-        return this.getEndsBefore() - 1;
+        return (digestedString.length() == 0) ? this.getEndsBefore() : this.getEndsBefore() - 1;
     }
 
     /**

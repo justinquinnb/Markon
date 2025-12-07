@@ -1,5 +1,6 @@
 package com.justinquinnb.markon.builtin.langs;
 
+import com.justinquinnb.markon.builtin.contenttypes.text.BlockQuoteText;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
@@ -10,6 +11,7 @@ import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -32,9 +34,11 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern headingPattern = Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)(.+?)((\\2)(?!([*_])))");
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))(.+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)");
-    private static final Pattern lineBreakPattern = Pattern.compile("(\\s{2})|(<(\\s*)br>(\\s*))$", Pattern.MULTILINE);
+    private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\n", Pattern.MULTILINE);
+    private static final Pattern blockQuoteTextPattern = Pattern.compile("/(^> (.*)$)(\\n^( *)(.*)$)*", Pattern.MULTILINE);
 
     static {
+        parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
         parsingRuleset.put(headingPattern, Markdown::parseHeading);
         parsingRuleset.put(boldPattern, Markdown::parseBold);
         parsingRuleset.put(italicPattern, Markdown::parseItalic);
@@ -44,6 +48,7 @@ public class Markdown implements MarkupLanguage {
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeader);
+        applicationRuleset.put(BlockQuoteText.class, Markdown::applyBlockQuote);
     }
 
     @Override
@@ -54,6 +59,35 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return new ParsingRuleset(parsingRuleset);
+    }
+
+    public static String applyBlockQuote(AbstractContent blockQuoteText) {
+        StringBuilder markedUpString = new StringBuilder();
+        blockQuoteText.getDigestedString().lines().forEach(line -> {
+            if (line.equals("\n")) {
+                markedUpString.append(">\n");
+            } else {
+                markedUpString.append("> ").append(line);
+            }
+        });
+
+        return markedUpString.toString();
+    }
+
+    public static BlockQuoteText parseBlockQuote(String blockQuoteText) {
+        StringBuilder digestedString = new StringBuilder();
+        Pattern firstLetterPattern = Pattern.compile("[^> ]");
+        blockQuoteText.lines().forEach(line -> {
+                Matcher matcher = firstLetterPattern.matcher(line);
+                if (matcher.find()) {
+                    System.out.println("Found character after blockquote: " + line.substring(matcher.start()));
+                    digestedString.append(line.substring(matcher.start()));
+                } else {
+                    digestedString.append("\n");
+                }
+            }
+            );
+        return new BlockQuoteText(digestedString.toString());
     }
 
     public static String applyLineBreak(AbstractContent lineBreak) {
