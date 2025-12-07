@@ -69,7 +69,7 @@ public class Markdown implements MarkupLanguage {
     }
 
     public static BoldText parseBold(String boldText) {
-        return new BoldText(0, boldText.substring(2, boldText.length() - 2));
+        return new BoldText(boldText.substring(2, boldText.length() - 2));
     }
 
     public static String applyItalic(AbstractContent italicText) {
