@@ -28,10 +28,32 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenMultiLineBoldMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="**Hello\n world!**";
+        String plainText = "Hello\n world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineItalicMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="*Hello* world!";
         String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineItalicMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="*Hello\n world!*";
+        String plainText = "Hello\n world!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
