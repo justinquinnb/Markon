@@ -5,11 +5,14 @@ import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
 import com.justinquinnb.markon.builtin.contenttypes.text.LineBreak;
+import com.justinquinnb.markon.builtin.contenttypes.text.OrderedListText;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +39,7 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
     private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\\n", Pattern.MULTILINE);
     private static final Pattern blockQuoteTextPattern = Pattern.compile("(^> (.*)$)(\\n^( *)(.*)\\n)*(^>( *))*", Pattern.MULTILINE);
+    private static final Pattern orderedListPattern = Pattern.compile("(^1. (.*))(\\n(\\d)+. (.*))*", Pattern.MULTILINE);
 
     static {
         parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
@@ -43,7 +47,9 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.put(boldPattern, Markdown::parseBold);
         parsingRuleset.put(italicPattern, Markdown::parseItalic);
         parsingRuleset.put(lineBreakPattern, Markdown::parseLineBreak);
+        parsingRuleset.put(orderedListPattern, Markdown::parseOrderedList);
 
+        applicationRuleset.put(OrderedListText.class, Markdown::applyOrderedList);
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
@@ -59,6 +65,53 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return new ParsingRuleset(parsingRuleset);
+    }
+
+    public static String applyOrderedList(AbstractContent orderedListText) {
+        StringBuilder markedUpString = new StringBuilder();
+        OrderedListText orderedList = (OrderedListText)orderedListText;
+        List<Integer> listItemStartIndices = orderedList.getItemStartIndices();
+        List<Integer> itemNumbers = orderedList.getItemNumbers();
+
+        for (int i = 0; i < listItemStartIndices.size(); i++) {
+            int startOfItem = listItemStartIndices.get(i);
+            if (i < listItemStartIndices.size() - 1) {
+                int endOfItem = listItemStartIndices.get(i + 1) - 1;
+                String listItemText = orderedList.getDigestedString().substring(startOfItem, endOfItem);
+                listItemText = itemNumbers.get(i) + ". " + listItemText;
+                markedUpString.append(listItemText).append("\n");
+            } else {
+                String listItemText = orderedList.getDigestedString().substring(startOfItem);
+                listItemText = (i + 1) + ". " + listItemText;
+                markedUpString.append(listItemText).append("\n");
+            }
+        }
+
+        return markedUpString.toString();
+    }
+
+    public static OrderedListText parseOrderedList(String orderedListText) {
+        Pattern listItem = Pattern.compile("(\\d)+. (.*)");
+        Matcher matcher = listItem.matcher(orderedListText);
+        List<Integer> itemStartIndices = new ArrayList<>();
+        List<Integer> itemNumbers = new ArrayList<>();
+        StringBuilder digestedString = new StringBuilder();
+        int numCharsRemoved = 0;
+        int numCharsAdded = 0;
+
+        while (matcher.find()) {
+            itemNumbers.add(Integer.parseInt(matcher.group().substring(0, matcher.group().indexOf('.'))));
+            digestedString.append(matcher.group(2)).append("\n");
+            numCharsRemoved += matcher.group(1).length();
+            itemStartIndices.add(matcher.start() - numCharsRemoved + numCharsAdded);
+            numCharsAdded += 1;
+        }
+
+        // Remove the last item's newline character
+        int digestedStringLength = digestedString.length();
+        digestedString.delete(digestedStringLength - 1, digestedStringLength);
+
+        return new OrderedListText(digestedString.toString(), itemStartIndices, itemNumbers);
     }
 
     public static String applyBlockQuote(AbstractContent blockQuoteText) {

@@ -160,6 +160,28 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenSingeLineOrderedListMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "1. Hello world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineOrderedListMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "1. Hello world!\n34. Goodbye!";
+        String plainText = "Hello world!\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
@@ -183,8 +205,8 @@ public class TestMarkdown {
     @Test
     public void givenMultiLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "### **Awesome Header**\n***Hello* world**. *Hi!* ***What's up?***";
-        String plainText = "Awesome Header\nHello world. Hi! What's up?";
+        String markdown = "### **Awesome Header**\n> 1. ***Hello* world**.\n> 2. *Hi!* ***What's up?***";
+        String plainText = "Awesome Header\nHello world.\nHi! What's up?";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
