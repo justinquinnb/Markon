@@ -31,9 +31,10 @@ public class Markdown implements MarkupLanguage {
             > applicationRuleset = new LinkedHashMap<>();
 
     // REGEX
-    private static final Pattern headingPattern = Pattern.compile("^(#{1,6})s*(.*?)s*#*s*$", Pattern.MULTILINE);
+    private static final Pattern headingPattern = Pattern.compile("^(?<!\\\\)(#{1,6}) .*$", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)([\\s\\S]+?)((\\2)(?!([*_])))", Pattern.MULTILINE);
-    private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)((([*_])(?![*_]))([\\s\\S]+?)((?<![*_])(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
+    private static final Pattern italicPattern = Pattern.compile(
+        "(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
     private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\\n", Pattern.MULTILINE);
     private static final Pattern blockQuoteTextPattern = Pattern.compile("(^> (.*)$)(\\n^( *)(.*)\\n)*(^>( *))*", Pattern.MULTILINE);
 
