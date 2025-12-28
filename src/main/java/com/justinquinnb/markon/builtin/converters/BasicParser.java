@@ -1,13 +1,10 @@
 package com.justinquinnb.markon.builtin.converters;
 
-import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import com.justinquinnb.markon.model.conversion.parsing.MarkupParser;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -15,6 +12,8 @@ import java.util.PriorityQueue;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A basic, built-in markup parser

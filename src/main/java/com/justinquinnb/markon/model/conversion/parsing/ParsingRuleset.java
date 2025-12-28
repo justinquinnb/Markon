@@ -2,10 +2,8 @@ package com.justinquinnb.markon.model.conversion.parsing;
 
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
-import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
