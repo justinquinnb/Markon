@@ -53,7 +53,7 @@ public class Markdown implements MarkupLanguage {
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
-        applicationRuleset.put(HeadingText.class, Markdown::applyHeader);
+        applicationRuleset.put(HeadingText.class, Markdown::applyHeading);
         applicationRuleset.put(BlockQuoteText.class, Markdown::applyBlockQuote);
     }
 
@@ -167,9 +167,9 @@ public class Markdown implements MarkupLanguage {
         return new ItalicText(italicText.substring(1, italicText.length() - 1));
     }
 
-    public static String applyHeader(AbstractContent headerText) {
-        HeadingText header = (HeadingText)headerText;
-        return "#".repeat(header.getLevel()) + " " + header.getDigestedString();
+    public static String applyHeading(AbstractContent headingText) {
+        HeadingText heading = (HeadingText)headingText;
+        return "#".repeat(heading.getLevel()) + " " + heading.getDigestedString();
     }
 
     public static HeadingText parseHeading(String headingText) {
