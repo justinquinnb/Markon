@@ -16,26 +16,8 @@ public class ApplicationRuleset implements
     Iterable<Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>>
 {
     private final LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset;
-    private Function<String, String> postProcessor = this::doNothing;
-
-    /**
-     * Creates a new {@code ApplicationRuleset} with the given ruleset and post-processor.
-     * @param ruleset the mapping that defines derivation of marked-up text from an
-     * {@link AbstractContentTree}
-     * @param postProcessor the function applied to text immediately after it has been marked-up
-     */
-    public ApplicationRuleset(
-        LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset,
-        Function<String, String> postProcessor
-    ) {
-        this.ruleset = ruleset;
-
-        if (!ruleset.containsKey(Document.class)) {
-            this.ruleset.put(Document.class, ApplicationRuleset::toUnboundedDoc);
-        }
-
-        this.postProcessor = postProcessor;
-    }
+    private Function<AbstractContentTree, AbstractContentTree> preProcessor = null;
+    private Function<String, String> postProcessor = null;
 
     /**
      * Creates a new {@code ApplicationRuleset} with the given ruleset and post-processor.
@@ -49,15 +31,6 @@ public class ApplicationRuleset implements
         if (!ruleset.containsKey(Document.class)) {
             this.ruleset.put(Document.class, ApplicationRuleset::toUnboundedDoc);
         }
-    }
-
-    /**
-     * The default pre-processor used if one is not specified.
-     * @param text the text to process
-     * @return the processed text to use in parsing
-     */
-    private String doNothing(String text) {
-        return text;
     }
 
     /**
@@ -80,10 +53,18 @@ public class ApplicationRuleset implements
         return this.ruleset;
     }
 
-    /**
-     * Gets {@code this} ruleset's post-processor.
-     * @return {@code this} ruleset's post-processor
-     */
+    public void setPreProcessor(Function<AbstractContentTree, AbstractContentTree> preProcessor) {
+        this.preProcessor = preProcessor;
+    }
+
+    public Function<AbstractContentTree, AbstractContentTree> getPreProcessor() {
+        return this.preProcessor;
+    }
+
+    public void setPostProcessor(Function<String, String> postProcessor) {
+        this.postProcessor = postProcessor;
+    }
+
     public Function<String, String> getPostProcessor() {
         return this.postProcessor;
     }

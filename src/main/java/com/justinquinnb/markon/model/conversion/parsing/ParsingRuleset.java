@@ -19,20 +19,8 @@ public class ParsingRuleset implements
     Iterable<Entry<Pattern, Function<String, ? extends AbstractContent>>>
 {
     private final LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> ruleset;
-    private Function<String, String> preProcessor = this::doNothing;
-
-    /**
-     * Creates a new {@code ParsingRuleset} with the given ruleset and pre-processor.
-     * @param ruleset the rules that define markup to {@link AbstractContent} conversion
-     * @param preProcessor the function applied to marked-up text immediately before parsing
-     */
-    public ParsingRuleset(
-        LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> ruleset,
-        Function<String, String> preProcessor
-    ) {
-        this.ruleset = ruleset;
-        this.preProcessor = preProcessor;
-    }
+    private Function<String, String> preProcessor = null;
+    private Function<AbstractContentTree, AbstractContentTree> postProcessor = null;
 
     /**
      * Creates a new {@code ParsingRuleset} with the given ruleset and pre-processor.
@@ -40,15 +28,6 @@ public class ParsingRuleset implements
      */
     public ParsingRuleset(LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> ruleset) {
         this.ruleset = ruleset;
-    }
-
-    /**
-     * The default pre-processor used if one is not specified.
-     * @param text the text to process
-     * @return the processed text to use in parsing
-     */
-    private String doNothing(String text) {
-        return text;
     }
 
     /**
@@ -62,12 +41,20 @@ public class ParsingRuleset implements
         return this.ruleset;
     }
 
-    /**
-     * Gets {@code this} ruleset's pre-processor.
-     * @return {@code this} ruleset's pre-processor
-     */
+    public void setPreProcessor(Function<String, String> preProcessor) {
+        this.preProcessor = preProcessor;
+    }
+
     public Function<String, String> getPreProcessor() {
         return this.preProcessor;
+    }
+
+    public void setPostProcessor(Function<AbstractContentTree, AbstractContentTree> postProcessor) {
+        this.postProcessor = postProcessor;
+    }
+
+    public Function<AbstractContentTree, AbstractContentTree> getPostProcessor() {
+        return this.postProcessor;
     }
 
     @Override

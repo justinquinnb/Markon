@@ -24,14 +24,21 @@ public class BasicParser implements MarkupParser {
 
     @Override
     public AbstractContentTree parse(String text, ParsingRuleset ruleset) {
-        logger.trace("Applying preprocessor to:\n{}", text);
-        String preprocessedText = ruleset.getPreProcessor().apply(text);
+        if (ruleset.getPreProcessor() != null) {
+            logger.trace("Applying preprocessor to:\n{}", text);
+            text = ruleset.getPreProcessor().apply(text);
+        }
 
-        logger.trace("Parsing all content from text...\n{}", preprocessedText);
-        PriorityQueue<AbstractContent> parsedContent = parseContent(preprocessedText, ruleset);
+        logger.trace("Parsing all content from text:\n{}", text);
+        PriorityQueue<AbstractContent> parsedContent = parseContent(text, ruleset);
         AbstractContentTree abstractContentTree = buildTree(parsedContent);
 
-        logger.trace("All content parsed to produce...\n{}", abstractContentTree);
+        if (ruleset.getPostProcessor() != null) {
+            logger.trace("Applying postprocessor to:\n{}", abstractContentTree);
+            abstractContentTree = ruleset.getPostProcessor().apply(abstractContentTree);
+        }
+
+        logger.trace("Markup parsing completed to produce:\n{}", abstractContentTree);
         return abstractContentTree;
     }
 

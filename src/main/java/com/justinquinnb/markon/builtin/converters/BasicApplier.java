@@ -13,15 +13,22 @@ public class BasicApplier implements MarkupApplier {
 
     @Override
     public String apply(AbstractContentTree tree, ApplicationRuleset ruleset) {
-        logger.trace("Applying all markup to...\n{}", tree);
+        if (ruleset.getPreProcessor() != null) {
+            logger.trace("Applying preprocessor to:\n{}", tree);
+            tree = ruleset.getPreProcessor().apply(tree);
+        }
+
+        logger.trace("Applying all markup to:\n{}", tree);
         recursiveApply(tree, tree, ruleset);
         String markedUpContent = tree.getData().getDigestedString();
 
-        logger.trace("Applying postprocessor to...\n{}", markedUpContent);
-        String postprocessedText = ruleset.getPostProcessor().apply(markedUpContent);
+        if (ruleset.getPostProcessor() != null) {
+            logger.trace("Applying postprocessor to:\n{}", markedUpContent);
+            markedUpContent = ruleset.getPostProcessor().apply(markedUpContent);
+        }
 
-        logger.trace("All markup applied to produce:\n{}", postprocessedText);
-        return postprocessedText;
+        logger.trace("Markup application completed to produce:\n{}", markedUpContent);
+        return markedUpContent;
     }
 
     private static void recursiveApply(
