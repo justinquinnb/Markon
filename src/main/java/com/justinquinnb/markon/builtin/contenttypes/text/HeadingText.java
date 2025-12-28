@@ -23,4 +23,11 @@ public class HeadingText extends FormattedText {
     public void setLevel(int level) {
         this.level = level;
     }
+
+    @Override
+    public String toString() {
+        return "{\ntype=" + this.getClass().getSimpleName() + ",\nstartIndex=" + this.getStartIndex() +
+            ",\n(endIndex=" + this.getEndIndex() + "),\n(length=" + this.getLength() +
+            "),\nlevel=" + this.level + "\ndigestedString=\n" + this.getDigestedString() + "\n}";
+    }
 }

@@ -1,6 +1,7 @@
 package com.justinquinnb.markon.builtin.contenttypes.text;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,5 +42,14 @@ public class OrderedListText extends FormattedText {
 
     public int getItemCount() {
         return itemStartIndices.size();
+    }
+
+    @Override
+    public String toString() {
+        List<String> numsAsStrs = itemNumbers.stream().map(String::valueOf).toList();
+        String itemNumsStr = String.join( ", ", numsAsStrs);
+        return "{\ntype=" + this.getClass().getSimpleName() + ",\nstartIndex=" + this.getStartIndex() +
+            ",\n(endIndex=" + this.getEndIndex() + "),\n(length=" + this.getLength() +
+            "),\n(itemCount=" + this.getItemCount() + ")\nitemNumbers=[" + itemNumsStr + "]\ndigestedString=\n" + this.getDigestedString() + "\n}";
     }
 }
