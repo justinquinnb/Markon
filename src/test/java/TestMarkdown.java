@@ -149,6 +149,17 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenMultiLineNestedBlockQuoteMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="> Hello world!\n>\n>> Goodbye!";
+        String plainText = "Hello world!\n\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
