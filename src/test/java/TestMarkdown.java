@@ -292,6 +292,28 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenSingeLineUnorderedListMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "- Hello world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineUnorderedListMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "- Hello world!\n*  Goodbye!\n+   Wait no!";
+        String plainText = "Hello world!\nGoodbye!\nWait no!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
