@@ -171,9 +171,9 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenSingleLineLineBreakMarkdown_whenParsed_thenParsed() {
+    public void givenSingleLineBrLineBreakMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown ="Hello world!<br>\n";
+        String markdown ="Hello world!<br />";
         String plainText = "Hello world!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
@@ -182,10 +182,54 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMultilineLineLineBreakMarkdown_whenParsed_thenParsed() {
+    public void givenMultilineBrLineLineBreakMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown ="Hello world!<br>\nGoodbye!";
-        String plainText = "Hello world!Goodbye!";
+        String markdown ="Hello world!<br />\nGoodbye!";
+        String plainText = "Hello world!\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineDoubleSpaceLineBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!  ";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultilineLineDoubleSpaceLineBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!  \nGoodbye!";
+        String plainText = "Hello world!\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineBackSlashLineBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\\";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultilineLineBackslashLineBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\\\nGoodbye!";
+        String plainText = "Hello world!\nGoodbye!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();
