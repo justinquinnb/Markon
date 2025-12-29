@@ -43,17 +43,17 @@ public class Markdown implements MarkupLanguage {
 
     static {
         parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
+        parsingRuleset.put(orderedListPattern, Markdown::parseOrderedList);
         parsingRuleset.put(headingPattern, Markdown::parseHeading);
         parsingRuleset.put(boldPattern, Markdown::parseBold);
         parsingRuleset.put(italicPattern, Markdown::parseItalic);
         parsingRuleset.put(lineBreakPattern, Markdown::parseLineBreak);
-        parsingRuleset.put(orderedListPattern, Markdown::parseOrderedList);
 
-        applicationRuleset.put(OrderedListText.class, Markdown::applyOrderedList);
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeading);
+        applicationRuleset.put(OrderedListText.class, Markdown::applyOrderedList);
         applicationRuleset.put(BlockQuoteText.class, Markdown::applyBlockQuote);
     }
 
