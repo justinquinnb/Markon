@@ -35,7 +35,7 @@ public class Markdown implements MarkupLanguage {
             > applicationRuleset = new LinkedHashMap<>();
 
     // REGEX
-    private static final Pattern headingPattern = Pattern.compile("^(?<!\\\\)(#{1,6}) .*$", Pattern.MULTILINE);
+    private static final Pattern headingPattern = Pattern.compile("(^( {0,3})(?<!\\\\)(#{1,6}) .+$)|(^ {0,3}(.+)\\n([-=])+$)", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)([\\s\\S]+?)((\\2)(?!([*_])))", Pattern.MULTILINE);
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
     private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)>))\\n", Pattern.MULTILINE);
@@ -177,9 +177,33 @@ public class Markdown implements MarkupLanguage {
 
     public static HeadingText parseHeading(String headingText) {
         int level = 0;
-        while (headingText.charAt(level) == '#') {
-            level++;
+        String digestedText = "";
+
+        // ATX-Style headings
+        Matcher atxMatcher = Pattern.compile("^( {0,3})(?<!\\\\)(#{1,6}) .+$").matcher(headingText);
+        if (atxMatcher.find()) {
+            // Check if trailing heading syntax is used (text to digest is surrounded)
+            Matcher surroundedMatcher = Pattern
+                .compile("^( {0,3})(?<!\\\\)(#{1,6}) (.+) (((?<!\\\\)#)+(\\s)*)$")
+                .matcher(headingText);
+            int textEndsAtChar = headingText.length();
+            if (surroundedMatcher.find()) {
+                // The -1 accounts for space prior to trailing heading hashtags
+                textEndsAtChar = surroundedMatcher.start(4) - 1;
+            }
+
+            while (headingText.charAt(level) == '#') {
+                level++;
+            }
+            digestedText = headingText.substring(level + 1, textEndsAtChar);
+        } else { // Setext-Style headings
+            Matcher setextMatcher = Pattern.compile("^ {0,3}(.+)\\n([-=])+$").matcher(headingText);
+            if (setextMatcher.find()) {
+                digestedText = setextMatcher.group(1);
+                level = setextMatcher.group(2).charAt(0) == '=' ? 1 : 2;
+            }
         }
-        return new HeadingText(headingText.substring(level + 1), level);
+
+        return new HeadingText(digestedText, level);
     }
 }

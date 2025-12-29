@@ -83,7 +83,7 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenSingleLineHeadingMarkdown_whenParsed_thenParsed() {
+    public void givenSingleLineSetextLeadingOnlyHeadingMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="### Hello world!";
         String plainText = "Hello world!";
@@ -94,9 +94,75 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenEscapedSingleLineHeadingMarkdown_whenParsed_thenParsed() {
+    public void givenEscapedSingleLineSetextLeadingOnlyHeadingMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown ="\\### Hello world!";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert !parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineSetextSurroundingHeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="### Hello world! #####";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenEscapedSingleLineSetextSurroundingHeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="\\### Hello world! #\\#";
+        String plainText = "Hello world! ##";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert !parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineAtxLevel1HeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\n=";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenEscapedSingleLineAtxLevel1HeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\n\\=";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert !parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineAtxLevel2HeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\n-";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenEscapedSingleLineAtxLevel2HeadingMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown ="Hello world!\n\\-";
         String plainText = "Hello world!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
