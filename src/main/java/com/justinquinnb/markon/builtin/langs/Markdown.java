@@ -13,6 +13,7 @@ import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -130,14 +131,16 @@ public class Markdown implements MarkupLanguage {
     public static BlockQuoteText parseBlockQuote(String blockQuoteText) {
         StringBuilder digestedString = new StringBuilder();
         Pattern firstLetterPattern = Pattern.compile("[^> ]");
+        AtomicInteger i = new AtomicInteger();
         blockQuoteText.lines().forEach(line -> {
                 Matcher matcher = firstLetterPattern.matcher(line);
                 if (matcher.find()) {
-                    System.out.println("Found character after blockquote: " + line.substring(matcher.start()));
+                    if (i.get() != 0) digestedString.append("\n");
                     digestedString.append(line.substring(matcher.start()));
                 } else {
                     digestedString.append("\n");
                 }
+                i.getAndIncrement();
             }
             );
         return new BlockQuoteText(digestedString.toString());
