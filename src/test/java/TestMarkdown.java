@@ -314,6 +314,50 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenSingeLineInlineCodeMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "`Hello world!`";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingeLineInlineCodeContainingEscapedStringMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "`Hello world! ``Goodbye!```";
+        String plainText = "Hello world! `Goodbye!`";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineInlineCodeMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "`Hello world!  \nGoodbye!`";
+        String plainText = "Hello world!\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineInlineCodeContainingEscapedStringMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "`Hello world!  \n``Goodbye!```";
+        String plainText = "Hello world!\n`Goodbye!`";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";

@@ -3,6 +3,7 @@ package com.justinquinnb.markon.builtin.langs;
 import com.justinquinnb.markon.builtin.contenttypes.text.BlockQuoteText;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
+import com.justinquinnb.markon.builtin.contenttypes.text.InlineCodeText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
 import com.justinquinnb.markon.builtin.contenttypes.text.LineBreak;
 import com.justinquinnb.markon.builtin.contenttypes.text.OrderedListText;
@@ -44,6 +45,12 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern blockQuoteTextPattern = Pattern.compile("(^( ){0,3}>( )?(.*)$)(\\n^( ){0,3}>( )?(.*)$)*", Pattern.MULTILINE);
     private static final Pattern orderedListPattern = Pattern.compile("((^1(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)(^(\\d{1,9}(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)*", Pattern.MULTILINE);
     private static final Pattern unorderedListPattern = Pattern.compile("((^[-+*] +)(.*)$)((\\n^[-+*] )(.*)$)*", Pattern.MULTILINE);
+    private static final Pattern inlineCodePattern = Pattern.compile("(?<![`\\\\])`([\\s\\S]+)`(?![`\\\\])", Pattern.MULTILINE);
+    // codeBlockPattern
+    // horizontalRule
+    // link
+    // image
+    // HTML
 
     static {
         parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
@@ -52,9 +59,11 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.put(headingPattern, Markdown::parseHeading);
         parsingRuleset.put(boldPattern, Markdown::parseBold);
         parsingRuleset.put(italicPattern, Markdown::parseItalic);
+        parsingRuleset.put(inlineCodePattern, Markdown::parseInlineCode);
         parsingRuleset.put(lineBreakPattern, Markdown::parseLineBreak);
 
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
+        applicationRuleset.put(InlineCodeText.class, Markdown::applyInlineCode);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeading);
@@ -71,6 +80,14 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return new ParsingRuleset(parsingRuleset);
+    }
+
+    public static String applyInlineCode(AbstractContent inlineCodeText) {
+        return "`" + ((InlineCodeText)inlineCodeText).getDigestedString() + "`";
+    }
+
+    public static InlineCodeText parseInlineCode(String inlineCodeText) {
+        return new InlineCodeText(inlineCodeText.substring(1, inlineCodeText.length() - 1));
     }
 
     public static String applyUnorderedList(AbstractContent orderedListText) {
