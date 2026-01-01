@@ -90,12 +90,14 @@ public class Markdown implements MarkupLanguage {
      * @return {@code true} if the match is not escaped, interior inline code, else {@code false}
      */
     public static boolean isNotInsideInlineCode(ParsingContext parsingContext) {
+        // Extract the relevant parsing context
         PriorityQueue<AbstractContent> currentlyParsedContent =
             parsingContext.getCurrentlyParsedContent();
         AbstractContent[] content = currentlyParsedContent.toArray(new AbstractContent[0]);
         int matchStartIndex = parsingContext.getMatchStartIndex();
         int matchEndIndex = matchStartIndex + parsingContext.getMatchText().length() - 1;
 
+        // Check whether the match lies within inline code
         for (AbstractContent abstractContent : content) {
             if (abstractContent instanceof InlineCodeText inlineCode) {
                 int inlineCodeStartIndex = inlineCode.getStartIndex();
@@ -137,6 +139,7 @@ public class Markdown implements MarkupLanguage {
 
         for (int i = 0; i < listItemStartIndices.size(); i++) {
             int startOfItem = listItemStartIndices.get(i);
+            // Determine where each list item ends
             if (i < listItemStartIndices.size() - 1) {
                 int endOfItem = listItemStartIndices.get(i + 1) - 1;
                 String listItemText = unorderedList.getDigestedString().substring(startOfItem, endOfItem);
@@ -158,6 +161,7 @@ public class Markdown implements MarkupLanguage {
         int numCharsRemoved = 0;
         int numCharsAdded = 0;
 
+        // Locate each list item
         while (matcher.find()) {
             digestedString.append(matcher.group(2)).append("\n");
             numCharsRemoved += matcher.group(1).length();
@@ -180,6 +184,7 @@ public class Markdown implements MarkupLanguage {
 
         for (int i = 0; i < listItemStartIndices.size(); i++) {
             int startOfItem = listItemStartIndices.get(i);
+            // Determine where each list item ends
             if (i < listItemStartIndices.size() - 1) {
                 int endOfItem = listItemStartIndices.get(i + 1) - 1;
                 String listItemText = orderedList.getDigestedString().substring(startOfItem, endOfItem);
@@ -204,6 +209,7 @@ public class Markdown implements MarkupLanguage {
         int numCharsRemoved = 0;
         int numCharsAdded = 0;
 
+        // Locate each list item
         while (matcher.find()) {
             itemNumbers.add(Integer.parseInt(matcher.group().substring(0, matcher.group().indexOf('.'))));
             digestedString.append(matcher.group(2)).append("\n");
@@ -246,7 +252,7 @@ public class Markdown implements MarkupLanguage {
                 }
                 i.getAndIncrement();
             }
-            );
+        );
         return new BlockQuoteText(digestedString.toString());
     }
 
