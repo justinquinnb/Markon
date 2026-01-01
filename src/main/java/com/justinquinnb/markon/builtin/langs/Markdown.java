@@ -59,7 +59,7 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
         parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code",
-            Markdown::isNotEscapedInteriorInlineCode);
+            Markdown::isNotInsideInlineCode);
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
 
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
@@ -89,7 +89,7 @@ public class Markdown implements MarkupLanguage {
      * @param parsingContext the context within which the match has been found
      * @return {@code true} if the match is not escaped, interior inline code, else {@code false}
      */
-    public static boolean isNotEscapedInteriorInlineCode(ParsingContext parsingContext) {
+    public static boolean isNotInsideInlineCode(ParsingContext parsingContext) {
         PriorityQueue<AbstractContent> currentlyParsedContent =
             parsingContext.getCurrentlyParsedContent();
         AbstractContent[] content = currentlyParsedContent.toArray(new AbstractContent[0]);
