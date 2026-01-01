@@ -8,18 +8,15 @@ import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 /**
  * Specification for plaintext representations of marked-up text.
  */
 public class PlainText implements MarkupLanguage {
-    private static final LinkedHashMap<
-        Pattern,
-        Function<String, ? extends AbstractContent>
-        > parsingRuleset = new LinkedHashMap<>();
+    private static final ParsingRuleset parsingRuleset = new ParsingRuleset(new ArrayList<>());
 
     private static final LinkedHashMap<
         Class<? extends AbstractContent>,
@@ -52,7 +49,7 @@ public class PlainText implements MarkupLanguage {
 
     @Override
     public ParsingRuleset getParsingRuleset() {
-        return new ParsingRuleset(parsingRuleset);
+        return parsingRuleset;
     }
 
     @Override

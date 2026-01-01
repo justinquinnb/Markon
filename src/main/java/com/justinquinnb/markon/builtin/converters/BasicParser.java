@@ -4,6 +4,8 @@ import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import com.justinquinnb.markon.model.conversion.parsing.MarkupParser;
+import com.justinquinnb.markon.model.conversion.parsing.ParsingContext;
+import com.justinquinnb.markon.model.conversion.parsing.ParsingRule;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +57,10 @@ public class BasicParser implements MarkupParser {
 
         // The original text with all digestion applied up to any given moment
         String workingText = text;
-        for (Entry<Pattern, Function<String, ? extends AbstractContent>> rule : ruleset) {
-            logger.trace("Applying rule for pattern: {}", rule.getKey().pattern());
-            Matcher matcher = rule.getKey().matcher(workingText);
+        List<ParsingRule> parsingRules = ruleset.getRules();
+        for (ParsingRule rule : parsingRules) {
+            logger.trace("Applying rule: {}", rule.getName());
+            Matcher matcher = rule.getPattern().matcher(workingText);
             while (matcher.find()) {
                 logger.trace("Working text currently:\n{}", workingText);
                 // Identify the match
@@ -65,23 +68,33 @@ public class BasicParser implements MarkupParser {
                 String matchedText = matcher.group();
                 logger.trace("Found match:\n{}", matchedText);
 
-                // Parse the match
-                AbstractContent parsedContent = rule.getValue().apply(matchedText);
-                parsedContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
-                logger.trace("Parsed into:\n{}", parsedContent);
+                // Determine the match's parsing suitability
+                ParsingContext context = new ParsingContext(matcher.start(), matchedText, content, text);
+                logger.trace("Applying match filter...");
+                if (rule.getFilter().apply(context)) { // Match is suitable for parsing
+                    logger.trace("Match is suitable for parsing.");
+                    // Parse the match
+                    AbstractContent parsedContent = rule.getParser().apply(matchedText);
+                    parsedContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
+                    logger.trace("Parsed into:\n{}", parsedContent);
 
-                // Update all parents
-                AbstractContent.adjustSurroundings(
-                    content, matcher.start(), matchLength, parsedContent.getDigestedString());
+                    // Update all parents
+                    AbstractContent.adjustSurroundings(
+                        content, matcher.start(), matchLength, parsedContent.getDigestedString());
 
-                content.add(parsedContent);
+                    content.add(parsedContent);
 
-                // Replace the exact instance of matched text with the digested text
-                String leftPiece = workingText.substring(0, matcher.start());
-                String rightPiece = workingText.substring(matcher.end());
+                    // Replace the exact instance of matched text with the digested text
+                    String leftPiece = workingText.substring(0, matcher.start());
+                    String rightPiece = workingText.substring(matcher.end());
 
-                workingText = leftPiece + parsedContent.getDigestedString() + rightPiece;
-                matcher = rule.getKey().matcher(workingText);
+                    workingText = leftPiece + parsedContent.getDigestedString() + rightPiece;
+                    matcher = rule.getPattern().matcher(workingText);
+                } else { // Skip the match (don't parse)
+                    logger.trace("Match is not suitable for parsing.");
+                    matcher.find();
+                }
+
                 logger.trace("Match processing complete.\n");
             }
             logger.trace("All matches processed for pattern.\n");

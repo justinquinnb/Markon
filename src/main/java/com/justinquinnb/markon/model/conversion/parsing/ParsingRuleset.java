@@ -3,8 +3,7 @@ package com.justinquinnb.markon.model.conversion.parsing;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -13,19 +12,18 @@ import java.util.regex.Pattern;
  * translation from a markup language to the language-agnostic {@link AbstractContentTree}
  * representation.
  */
-public class ParsingRuleset implements
-    Iterable<Entry<Pattern, Function<String, ? extends AbstractContent>>>
+public class ParsingRuleset implements Iterable<ParsingRule>
 {
-    private final LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> ruleset;
+    private final List<ParsingRule> rules;
     private Function<String, String> preProcessor = null;
     private Function<AbstractContentTree, AbstractContentTree> postProcessor = null;
 
     /**
      * Creates a new {@code ParsingRuleset} with the given ruleset and pre-processor.
-     * @param ruleset the rules that define markup to {@link AbstractContent} conversion
+     * @param rules the rules that define markup to {@link AbstractContent} conversion
      */
-    public ParsingRuleset(LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> ruleset) {
-        this.ruleset = ruleset;
+    public ParsingRuleset(List<ParsingRule> rules) {
+        this.rules = rules;
     }
 
     /**
@@ -35,8 +33,8 @@ public class ParsingRuleset implements
      * @return the mapping that defines derivation of an {@link AbstractContentTree}
      * from text written in {@code this} markup language
      */
-    public LinkedHashMap<Pattern, Function<String, ? extends AbstractContent>> getParsingRuleset() {
-        return this.ruleset;
+    public List<ParsingRule> getRules() {
+        return this.rules;
     }
 
     public void setPreProcessor(Function<String, String> preProcessor) {
@@ -55,8 +53,26 @@ public class ParsingRuleset implements
         return this.postProcessor;
     }
 
+    public void addRule(Pattern pattern, Function<String, AbstractContent> parser) {
+        this.rules.add(new ParsingRule(pattern, parser));
+    }
+
+    public void addRule(Pattern pattern, Function<String, AbstractContent> parser, String name) {
+        this.rules.add(new ParsingRule(pattern, parser, name));
+    }
+
+    public void addRule(Pattern pattern, Function<String, AbstractContent> parser,
+        Function<ParsingContext, Boolean> parsingCondition) {
+        this.rules.add(new ParsingRule(pattern, parser, parsingCondition));
+    }
+
+    public void addRule(Pattern pattern, Function<String, AbstractContent> parser, String name,
+        Function<ParsingContext, Boolean> parsingCondition) {
+        this.rules.add(new ParsingRule(pattern, parser, name, parsingCondition));
+    }
+
     @Override
-    public Iterator<Entry<Pattern, Function<String, ? extends AbstractContent>>> iterator() {
-        return this.ruleset.entrySet().iterator();
+    public Iterator<ParsingRule> iterator() {
+        return this.rules.iterator();
     }
 }

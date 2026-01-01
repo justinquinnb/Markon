@@ -11,10 +11,12 @@ import com.justinquinnb.markon.builtin.contenttypes.text.UnorderedListText;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
+import com.justinquinnb.markon.model.conversion.parsing.ParsingContext;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -27,10 +29,7 @@ import java.util.regex.Pattern;
  * @see <a href="https://spec.commonmark.org/0.31.2/">CommonMark Specification</a>
  */
 public class Markdown implements MarkupLanguage {
-    private static final LinkedHashMap<
-        Pattern,
-        Function<String, ? extends AbstractContent>
-        > parsingRuleset = new LinkedHashMap<>();
+    private static final ParsingRuleset parsingRuleset = new ParsingRuleset(new ArrayList<>());
 
     private static final LinkedHashMap<
             Class<? extends AbstractContent>,
@@ -53,14 +52,14 @@ public class Markdown implements MarkupLanguage {
     // HTML
 
     static {
-        parsingRuleset.put(blockQuoteTextPattern, Markdown::parseBlockQuote);
-        parsingRuleset.put(orderedListPattern, Markdown::parseOrderedList);
-        parsingRuleset.put(unorderedListPattern, Markdown::parseUnorderedList);
-        parsingRuleset.put(headingPattern, Markdown::parseHeading);
-        parsingRuleset.put(boldPattern, Markdown::parseBold);
-        parsingRuleset.put(italicPattern, Markdown::parseItalic);
-        parsingRuleset.put(inlineCodePattern, Markdown::parseInlineCode);
-        parsingRuleset.put(lineBreakPattern, Markdown::parseLineBreak);
+        parsingRuleset.addRule(blockQuoteTextPattern, Markdown::parseBlockQuote, "Block Quote");
+        parsingRuleset.addRule(orderedListPattern, Markdown::parseOrderedList, "Ordered List");
+        parsingRuleset.addRule(unorderedListPattern, Markdown::parseUnorderedList, "Unordered List");
+        parsingRuleset.addRule(headingPattern, Markdown::parseHeading, "Heading");
+        parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
+        parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
+        parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code");
+        parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
 
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(InlineCodeText.class, Markdown::applyInlineCode);
@@ -79,7 +78,7 @@ public class Markdown implements MarkupLanguage {
 
     @Override
     public ParsingRuleset getParsingRuleset() {
-        return new ParsingRuleset(parsingRuleset);
+        return parsingRuleset;
     }
 
     public static String applyInlineCode(AbstractContent inlineCodeText) {
