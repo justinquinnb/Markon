@@ -44,7 +44,7 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern blockQuoteTextPattern = Pattern.compile("(^( ){0,3}>( )?(.*)$)(\\n^( ){0,3}>( )?(.*)$)*", Pattern.MULTILINE);
     private static final Pattern orderedListPattern = Pattern.compile("((^1(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)(^(\\d{1,9}(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)*", Pattern.MULTILINE);
     private static final Pattern unorderedListPattern = Pattern.compile("((^[-+*] +)(.*)$)((\\n^[-+*] )(.*)$)*", Pattern.MULTILINE);
-    private static final Pattern inlineCodePattern = Pattern.compile("(?<![`\\\\])`([\\s\\S]+)`(?![`\\\\])", Pattern.MULTILINE);
+    private static final Pattern inlineCodePattern = Pattern.compile("(?<!`)(((?<!\\\\)`){1,2})([\\s\\S]+?)(\\1)(?!`)", Pattern.MULTILINE);
     // codeBlockPattern
     // horizontalRule
     // link
@@ -58,7 +58,8 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.addRule(headingPattern, Markdown::parseHeading, "Heading");
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
-        parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code");
+        parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code",
+            Markdown::isNotEscapedInteriorInlineCode);
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
 
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
@@ -81,12 +82,52 @@ public class Markdown implements MarkupLanguage {
         return parsingRuleset;
     }
 
+    /**
+     * Checks whether a given inline code match uses escaped interior syntax
+     * {@code `unescaped ``escaped```}, indicating parsing should not occur.
+     *
+     * @param parsingContext the context within which the match has been found
+     * @return {@code true} if the match is not escaped, interior inline code, else {@code false}
+     */
+    public static boolean isNotEscapedInteriorInlineCode(ParsingContext parsingContext) {
+        PriorityQueue<AbstractContent> currentlyParsedContent =
+            parsingContext.getCurrentlyParsedContent();
+        AbstractContent[] content = currentlyParsedContent.toArray(new AbstractContent[0]);
+        int matchStartIndex = parsingContext.getMatchStartIndex();
+        int matchEndIndex = matchStartIndex + parsingContext.getMatchText().length() - 1;
+
+        for (AbstractContent abstractContent : content) {
+            if (abstractContent instanceof InlineCodeText inlineCode) {
+                int inlineCodeStartIndex = inlineCode.getStartIndex();
+                int inlineCodeEndIndex =
+                    inlineCodeStartIndex + inlineCode.getDigestedString().length() - 1;
+
+                if (inlineCodeStartIndex <= matchStartIndex
+                    && matchEndIndex <= inlineCodeEndIndex
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public static String applyInlineCode(AbstractContent inlineCodeText) {
-        return "`" + ((InlineCodeText)inlineCodeText).getDigestedString() + "`";
+        // Ensure the digested string is surrounded by two backticks if it contains backticks itself
+        if (inlineCodeText.getDigestedString().contains("`")) {
+            return "``" + ((InlineCodeText)inlineCodeText).getDigestedString() + "``";
+        } else {
+            return "`" + ((InlineCodeText)inlineCodeText).getDigestedString() + "`";
+        }
     }
 
     public static InlineCodeText parseInlineCode(String inlineCodeText) {
-        return new InlineCodeText(inlineCodeText.substring(1, inlineCodeText.length() - 1));
+        String prefix = inlineCodeText.substring(0, 2);
+        int affixLength = prefix.equals("``") ? 2 : 1;
+
+        return new InlineCodeText(inlineCodeText.substring(affixLength,
+            inlineCodeText.length() - affixLength));
     }
 
     public static String applyUnorderedList(AbstractContent orderedListText) {

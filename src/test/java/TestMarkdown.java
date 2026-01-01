@@ -327,7 +327,7 @@ public class TestMarkdown {
     @Test
     public void givenSingeLineInlineCodeContainingEscapedStringMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "`Hello world! ``Goodbye!```";
+        String markdown = "``Hello world! `Goodbye!```";
         String plainText = "Hello world! `Goodbye!`";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
@@ -349,7 +349,7 @@ public class TestMarkdown {
     @Test
     public void givenMultiLineInlineCodeContainingEscapedStringMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "`Hello world!  \n``Goodbye!```";
+        String markdown = "``Hello world!  \n`Goodbye!```";
         String plainText = "Hello world!\n`Goodbye!`";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
