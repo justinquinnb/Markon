@@ -435,6 +435,28 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenMultiLineEscapedTabIndentedCodeBlockContainingIgnoredSyntaxMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\\\tHello world!\n\t*Goodbye!*";
+        String plainText = "\\\tHello world!\n\tGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineEscapedSpaceIndentedCodeBlockContainingIgnoredSyntaxMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\\    Hello world!\n    *Goodbye!*";
+        String plainText = "\\    Hello world!\n    Goodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
