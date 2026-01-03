@@ -1,2 +1,2 @@
 # Markon
-Extensible markup translation library for Java
+Extensible markup conversion library for Java
