@@ -338,7 +338,62 @@ public class TestMarkdown {
     @Test
     public void givenMultiLineInlineCodeMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "`Hello world!  \nGoodbye!`";
+        String markdown = "`Hello world!  Goodbye!`";
+        String plainText = "Hello world!  Goodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineInlineCodeContainingEscapedBackticksMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "``Hello world!  `Goodbye!```";
+        String plainText = "Hello world!  `Goodbye!`";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineInlineCodeContainingIgnoredSyntaxMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "`Hello world!  *Goodbye!*`";
+        String plainText = "Hello world!  *Goodbye!*";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineTabIndentedCodeBlockMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\tHello world! Goodbye!";
+        String plainText = "Hello world! Goodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineSpaceIndentedCodeBlockMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "    Hello world! Goodbye!";
+        String plainText = "Hello world! Goodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineTabIndentedCodeBlockMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\tHello world!\n\tGoodbye!";
         String plainText = "Hello world!\nGoodbye!";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
@@ -347,10 +402,32 @@ public class TestMarkdown {
     }
 
     @Test
-    public void givenMultiLineInlineCodeContainingEscapedStringMarkdown_whenParsed_thenParsed() {
+    public void givenMultiLineSpaceIndentedCodeBlockMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
-        String markdown = "``Hello world!  \n`Goodbye!```";
-        String plainText = "Hello world!\n`Goodbye!`";
+        String markdown = "    Hello world!\n    Goodbye!";
+        String plainText = "Hello world!\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineTabIndentedCodeBlockContainingIgnoredSyntaxMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\tHello world!\n\t*Goodbye!*";
+        String plainText = "Hello world!\n*Goodbye!*";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineSpaceIndentedCodeBlockContainingIgnoredSyntaxMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "    Hello world!\n    *Goodbye!*";
+        String plainText = "Hello world!\n*Goodbye!*";
 
         AbstractContentTree contentTree = parser.parse(markdown, lang);
         String parsedText = contentTree.getData().getDigestedString();

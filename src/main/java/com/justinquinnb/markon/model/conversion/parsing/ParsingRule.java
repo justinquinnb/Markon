@@ -26,7 +26,8 @@ public class ParsingRule {
     private String name;
 
     /**
-     * The condition used to determine whether a match should be parsed or ignored.
+     * The condition used to determine whether a match should be parsed or ignored. If
+     * {@code true}, the match should be FILTERED (NOT parsed).
      */
     private Function<ParsingContext, Boolean> filter;
 
@@ -35,7 +36,7 @@ public class ParsingRule {
         this.parser = parser;
 
         this.name = pattern.pattern();
-        this.filter = context -> true; // Always parse
+        this.filter = context -> false; // Always parse
     }
 
     public ParsingRule(Pattern pattern, Function<String, ParserResponse> parser,

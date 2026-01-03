@@ -86,7 +86,7 @@ public class BasicParser implements MarkupParser {
                     // from the get-go)
                     ParsingContext context = new ParsingContext(matcher.start(), matchedText, content, text);
                     logger.trace("Applying match filter...");
-                    isFilteredOut = !rule.getFilter().apply(context);
+                    isFilteredOut = rule.getFilter().apply(context);
                     if (isFilteredOut) {
                         logger.trace("Match is blocked by filter.");
                     } else {

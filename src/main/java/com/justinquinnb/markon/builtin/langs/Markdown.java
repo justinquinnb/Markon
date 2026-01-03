@@ -2,6 +2,7 @@ package com.justinquinnb.markon.builtin.langs;
 
 import com.justinquinnb.markon.builtin.contenttypes.text.BlockQuoteText;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
+import com.justinquinnb.markon.builtin.contenttypes.text.CodeBlockText;
 import com.justinquinnb.markon.builtin.contenttypes.text.HeadingText;
 import com.justinquinnb.markon.builtin.contenttypes.text.InlineCodeText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
@@ -11,12 +12,12 @@ import com.justinquinnb.markon.builtin.contenttypes.text.UnorderedListText;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.application.ApplicationRuleset;
+import com.justinquinnb.markon.model.conversion.parsing.ParserResponse;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingContext;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -45,31 +46,34 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern orderedListPattern = Pattern.compile("((^1(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)(^(\\d{1,9}(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)*", Pattern.MULTILINE);
     private static final Pattern unorderedListPattern = Pattern.compile("((^[-+*] +)(.*)$)((\\n^[-+*] )(.*)$)*", Pattern.MULTILINE);
     private static final Pattern inlineCodePattern = Pattern.compile("(?<!`)(((?<!\\\\)`){1,2})([\\s\\S]+?)(\\1)(?!`)", Pattern.MULTILINE);
-    // codeBlockPattern
+    private static final Pattern codeBlockPattern = Pattern.compile(
+        "((^\\\\(\\t| {4})(.*)\\n)?(^(\\t| {4})(.*))(\\n^(\\t| {4})(.*))*)", Pattern.MULTILINE);
+    // (extended codeblock (^(```|~~~)(.*)\n((.*)\n)*\12)
     // horizontalRule
     // link
     // image
     // HTML
 
     static {
+        parsingRuleset.addRule(codeBlockPattern, Markdown::parseCodeBlock, "Code Block", Markdown::isEscapedCodeBlock);
         parsingRuleset.addRule(blockQuoteTextPattern, Markdown::parseBlockQuote, "Block Quote");
         parsingRuleset.addRule(orderedListPattern, Markdown::parseOrderedList, "Ordered List");
         parsingRuleset.addRule(unorderedListPattern, Markdown::parseUnorderedList, "Unordered List");
+        parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code");
         parsingRuleset.addRule(headingPattern, Markdown::parseHeading, "Heading");
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
-        parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code",
-            Markdown::isNotInsideInlineCode);
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
 
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
-        applicationRuleset.put(InlineCodeText.class, Markdown::applyInlineCode);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeading);
+        applicationRuleset.put(InlineCodeText.class, Markdown::applyInlineCode);
         applicationRuleset.put(UnorderedListText.class, Markdown::applyUnorderedList);
         applicationRuleset.put(OrderedListText.class, Markdown::applyOrderedList);
         applicationRuleset.put(BlockQuoteText.class, Markdown::applyBlockQuote);
+        applicationRuleset.put(CodeBlockText.class, Markdown::applyCodeBlock);
     }
 
     @Override
@@ -82,37 +86,39 @@ public class Markdown implements MarkupLanguage {
         return parsingRuleset;
     }
 
-    /**
-     * Checks whether a given inline code match uses escaped interior syntax
-     * {@code `unescaped ``escaped```}, indicating parsing should not occur.
-     *
-     * @param parsingContext the context within which the match has been found
-     * @return {@code true} if the match is not escaped, interior inline code, else {@code false}
-     */
-    public static boolean isNotInsideInlineCode(ParsingContext parsingContext) {
-        // Extract the relevant parsing context
-        PriorityQueue<AbstractContent> currentlyParsedContent =
-            parsingContext.getCurrentlyParsedContent();
-        AbstractContent[] content = currentlyParsedContent.toArray(new AbstractContent[0]);
-        int matchStartIndex = parsingContext.getMatchStartIndex();
-        int matchEndIndex = matchStartIndex + parsingContext.getMatchText().length() - 1;
+    public static boolean isEscapedCodeBlock(ParsingContext parsingContext) {
+        return parsingContext.getMatchText().startsWith("\\");
+    }
 
-        // Check whether the match lies within inline code
-        for (AbstractContent abstractContent : content) {
-            if (abstractContent instanceof InlineCodeText inlineCode) {
-                int inlineCodeStartIndex = inlineCode.getStartIndex();
-                int inlineCodeEndIndex =
-                    inlineCodeStartIndex + inlineCode.getDigestedString().length() - 1;
-
-                if (inlineCodeStartIndex <= matchStartIndex
-                    && matchEndIndex <= inlineCodeEndIndex
-                ) {
-                    return false;
-                }
+    public static String applyCodeBlock(AbstractContent codeBlockText) {
+        StringBuilder markedUpString = new StringBuilder();
+        codeBlockText.getDigestedString().lines().forEach(line -> {
+            if (line.equals("\n")) {
+                markedUpString.append("    \n");
+            } else {
+                markedUpString.append("    ").append(line);
             }
+        });
+
+        return markedUpString.toString();
+    }
+
+    public static ParserResponse parseCodeBlock(String codeBlockText) {
+        Pattern codeLine = Pattern.compile("( {4}|\t)(.*)");
+        Matcher matcher = codeLine.matcher(codeBlockText);
+        StringBuilder digestedString = new StringBuilder();
+
+        // Locate each list item
+        while (matcher.find()) {
+            digestedString.append(matcher.group(2)).append("\n");
         }
 
-        return true;
+        // Remove the last item's newline character
+        int digestedStringLength = digestedString.length();
+        digestedString.delete(digestedStringLength - 1, digestedStringLength);
+
+        CodeBlockText codeBlock = new CodeBlockText(digestedString.toString());
+        return new ParserResponse(codeBlock, true);
     }
 
     public static String applyInlineCode(AbstractContent inlineCodeText) {
@@ -124,12 +130,13 @@ public class Markdown implements MarkupLanguage {
         }
     }
 
-    public static InlineCodeText parseInlineCode(String inlineCodeText) {
+    public static ParserResponse parseInlineCode(String inlineCodeText) {
         String prefix = inlineCodeText.substring(0, 2);
         int affixLength = prefix.equals("``") ? 2 : 1;
 
-        return new InlineCodeText(inlineCodeText.substring(affixLength,
+        InlineCodeText inlineCode = new InlineCodeText(inlineCodeText.substring(affixLength,
             inlineCodeText.length() - affixLength));
+        return new ParserResponse(inlineCode, true);
     }
 
     public static String applyUnorderedList(AbstractContent orderedListText) {
@@ -153,7 +160,7 @@ public class Markdown implements MarkupLanguage {
         return markedUpString.toString();
     }
 
-    public static UnorderedListText parseUnorderedList(String unorderedListText) {
+    public static ParserResponse parseUnorderedList(String unorderedListText) {
         Pattern listItem = Pattern.compile("([-+*]) +(.*)");
         Matcher matcher = listItem.matcher(unorderedListText);
         List<Integer> itemStartIndices = new ArrayList<>();
@@ -173,7 +180,9 @@ public class Markdown implements MarkupLanguage {
         int digestedStringLength = digestedString.length();
         digestedString.delete(digestedStringLength - 1, digestedStringLength);
 
-        return new UnorderedListText(digestedString.toString(), itemStartIndices);
+        UnorderedListText unorderedList = new UnorderedListText(digestedString.toString(),
+            itemStartIndices);
+        return new ParserResponse(unorderedList);
     }
 
     public static String applyOrderedList(AbstractContent orderedListText) {
@@ -200,7 +209,7 @@ public class Markdown implements MarkupLanguage {
         return markedUpString.toString();
     }
 
-    public static OrderedListText parseOrderedList(String orderedListText) {
+    public static ParserResponse parseOrderedList(String orderedListText) {
         Pattern listItem = Pattern.compile("(\\d)+. +(.*)");
         Matcher matcher = listItem.matcher(orderedListText);
         List<Integer> itemStartIndices = new ArrayList<>();
@@ -222,7 +231,8 @@ public class Markdown implements MarkupLanguage {
         int digestedStringLength = digestedString.length();
         digestedString.delete(digestedStringLength - 1, digestedStringLength);
 
-        return new OrderedListText(digestedString.toString(), itemStartIndices, itemNumbers);
+        OrderedListText orderedList = new OrderedListText(digestedString.toString(), itemStartIndices, itemNumbers);
+        return new ParserResponse(orderedList);
     }
 
     public static String applyBlockQuote(AbstractContent blockQuoteText) {
@@ -238,7 +248,7 @@ public class Markdown implements MarkupLanguage {
         return markedUpString.toString();
     }
 
-    public static BlockQuoteText parseBlockQuote(String blockQuoteText) {
+    public static ParserResponse parseBlockQuote(String blockQuoteText) {
         StringBuilder digestedString = new StringBuilder();
         Pattern firstLetterPattern = Pattern.compile("[^> ]");
         AtomicInteger i = new AtomicInteger();
@@ -253,31 +263,35 @@ public class Markdown implements MarkupLanguage {
                 i.getAndIncrement();
             }
         );
-        return new BlockQuoteText(digestedString.toString());
+
+        BlockQuoteText blockQuote = new BlockQuoteText(digestedString.toString());
+        return new ParserResponse(blockQuote);
     }
 
     public static String applyLineBreak(AbstractContent lineBreak) {
         return "  ";
     }
 
-    public static LineBreak parseLineBreak(String lineBreak) {
-        return new LineBreak();
+    public static ParserResponse parseLineBreak(String lineBreak) {
+        return new ParserResponse(new LineBreak());
     }
 
     public static String applyBold(AbstractContent boldText) {
         return "**" + ((BoldText)boldText).getDigestedString() + "**";
     }
 
-    public static BoldText parseBold(String boldText) {
-        return new BoldText(boldText.substring(2, boldText.length() - 2));
+    public static ParserResponse parseBold(String boldText) {
+        BoldText bold = new BoldText(boldText.substring(2, boldText.length() - 2));
+        return new ParserResponse(bold);
     }
 
     public static String applyItalic(AbstractContent italicText) {
         return "*" + ((ItalicText)italicText).getDigestedString() + "*";
     }
 
-    public static ItalicText parseItalic(String italicText) {
-        return new ItalicText(italicText.substring(1, italicText.length() - 1));
+    public static ParserResponse parseItalic(String italicText) {
+        ItalicText italics = new ItalicText(italicText.substring(1, italicText.length() - 1));
+        return new ParserResponse(italics);
     }
 
     public static String applyHeading(AbstractContent headingText) {
@@ -285,7 +299,7 @@ public class Markdown implements MarkupLanguage {
         return "#".repeat(heading.getLevel()) + " " + heading.getDigestedString();
     }
 
-    public static HeadingText parseHeading(String headingText) {
+    public static ParserResponse parseHeading(String headingText) {
         int level = 0;
         String digestedText = "";
 
@@ -314,6 +328,7 @@ public class Markdown implements MarkupLanguage {
             }
         }
 
-        return new HeadingText(digestedText, level);
+        HeadingText heading = new HeadingText(digestedText, level);
+        return new ParserResponse(heading);
     }
 }
