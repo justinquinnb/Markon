@@ -4,16 +4,15 @@ import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import com.justinquinnb.markon.model.conversion.parsing.MarkupParser;
+import com.justinquinnb.markon.model.conversion.parsing.ParserResponse;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingContext;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRule;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
+import com.justinquinnb.markon.model.conversion.util.TextRegionIndices;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
-import java.util.function.Function;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +57,11 @@ public class BasicParser implements MarkupParser {
         // The original text with all digestion applied up to any given moment
         String workingText = text;
         List<ParsingRule> parsingRules = ruleset.getRules();
+
+        // Remember any escaped substrings
+        PriorityQueue<TextRegionIndices> ignoredRegions = new PriorityQueue<>();
+
+        // Apply each rule to parse the markup out of the original text
         for (ParsingRule rule : parsingRules) {
             logger.trace("Applying rule: {}", rule.getName());
             Matcher matcher = rule.getPattern().matcher(workingText);
@@ -68,13 +72,37 @@ public class BasicParser implements MarkupParser {
                 String matchedText = matcher.group();
                 logger.trace("Found match:\n{}", matchedText);
 
-                // Determine the match's parsing suitability
-                ParsingContext context = new ParsingContext(matcher.start(), matchedText, content, text);
-                logger.trace("Applying match filter...");
-                if (rule.getFilter().apply(context)) { // Match is suitable for parsing
+                // Ensure the match isn't in an ignored region
+                logger.trace("Checking whether match is in an escaped region...");
+                boolean isInIgnoredRegion = isInIgnoredRegion(
+                    new TextRegionIndices(matcher.start(), matcher.end()), ignoredRegions);
+                boolean isFilteredOut = false;
+                if (isInIgnoredRegion) {
+                    logger.trace("Match is in an ignored region.");
+                } else {
+                    logger.trace("Match is not in an ignored region.");
+
+                    // Determine the match's parsing suitability (only if region isn't ignored
+                    // from the get-go)
+                    ParsingContext context = new ParsingContext(matcher.start(), matchedText, content, text);
+                    logger.trace("Applying match filter...");
+                    isFilteredOut = !rule.getFilter().apply(context);
+                    if (isFilteredOut) {
+                        logger.trace("Match is blocked by filter.");
+                    } else {
+                        logger.trace("Match is not blocked by filter.");
+                    }
+                }
+
+                // Skip invalid matches
+                if (isInIgnoredRegion || isFilteredOut) {
+                    logger.trace("Skipping match.");
+                    matcher.find();
+                } else {
                     logger.trace("Match is suitable for parsing.");
                     // Parse the match
-                    AbstractContent parsedContent = rule.getParser().apply(matchedText);
+                    ParserResponse parserResponse = rule.getParser().apply(matchedText);
+                    AbstractContent parsedContent = parserResponse.getContent();
                     parsedContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
                     logger.trace("Parsed into:\n{}", parsedContent);
 
@@ -90,11 +118,16 @@ public class BasicParser implements MarkupParser {
 
                     workingText = leftPiece + parsedContent.getDigestedString() + rightPiece;
                     matcher = rule.getPattern().matcher(workingText);
-                } else { // Skip the match (don't parse)
-                    logger.trace("Match is not suitable for parsing.");
-                    matcher.find();
-                }
 
+                    logger.trace("Checking whether embedded contents should be ignored...");
+                    if (parserResponse.isEmbeddedIgnored()) {
+                        logger.trace("Match's embedded contents should be ignored.");
+                        ignoredRegions.add(new TextRegionIndices(
+                            parsedContent.getStartIndex(), parsedContent.getEndIndex()));
+                    } else {
+                        logger.trace("Embedded contents should not be ignored.");
+                    }
+                }
                 logger.trace("Match processing complete.\n");
             }
             logger.trace("All matches processed for pattern.\n");
@@ -144,5 +177,38 @@ public class BasicParser implements MarkupParser {
 
         logger.trace("Parsing complete.");
         return root;
+    }
+
+    /**
+     * Check whether the given {@code matchRegion} falls within any of the provided
+     * {@code ignoredRegions}.
+     * @param matchRegion the region of text that was matched
+     * @param ignoredRegions the regions of text to ignore
+     * @return {@code true} if the match region overlaps with any of the escaped regions, else
+     * {@code false}
+     */
+    private static boolean isInIgnoredRegion(TextRegionIndices matchRegion,
+        PriorityQueue<TextRegionIndices> ignoredRegions) {
+        PriorityQueue<TextRegionIndices> copy = new PriorityQueue<>(ignoredRegions);
+
+        while (!copy.isEmpty()) {
+            TextRegionIndices region = copy.poll();
+            // Match starts after the currently viewed region ends, therefore, keep checking
+            // This is the most likely case, so check it first
+            boolean regionIsBefore = region.getEndIndex() < matchRegion.getStartIndex();
+            if (regionIsBefore) continue;
+
+            // Match ends before the currently viewed region starts
+            // Therefore, there are no more relevant escaped regions to check... the match is
+            // unescaped
+            boolean regionIsAfter = matchRegion.getEndIndex() < region.getStartIndex();
+            if (regionIsAfter) return false;
+
+            // Match must be (at least partially) within the currently viewed, escaped region
+            // So, ignore the match
+            return true;
+        }
+
+        return false;
     }
 }

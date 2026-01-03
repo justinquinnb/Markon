@@ -18,7 +18,7 @@ public class ParsingRule {
     /**
      * The function used to digest the match into {@link AbstractContent}
      */
-    private final Function<String, ? extends AbstractContent> parser;
+    private final Function<String, ParserResponse> parser;
 
     /**
      * The rule's name. By default, the {@link #pattern} is used.
@@ -30,7 +30,7 @@ public class ParsingRule {
      */
     private Function<ParsingContext, Boolean> filter;
 
-    public ParsingRule(Pattern pattern, Function<String, ? extends AbstractContent> parser) {
+    public ParsingRule(Pattern pattern, Function<String, ParserResponse> parser) {
         this.pattern = pattern;
         this.parser = parser;
 
@@ -38,19 +38,19 @@ public class ParsingRule {
         this.filter = context -> true; // Always parse
     }
 
-    public ParsingRule(Pattern pattern, Function<String, ? extends AbstractContent> parser,
+    public ParsingRule(Pattern pattern, Function<String, ParserResponse> parser,
         String name) {
         this(pattern, parser);
         this.name = name;
     }
 
-    public ParsingRule(Pattern pattern, Function<String, ? extends AbstractContent> parser,
+    public ParsingRule(Pattern pattern, Function<String, ParserResponse> parser,
         Function<ParsingContext, Boolean> filter) {
         this(pattern, parser);
         this.filter = filter;
     }
 
-    public ParsingRule(Pattern pattern, Function<String, ? extends AbstractContent> parser,
+    public ParsingRule(Pattern pattern, Function<String, ParserResponse> parser,
         String name, Function<ParsingContext, Boolean> filter) {
         this(pattern, parser);
         this.name = name;
@@ -61,7 +61,7 @@ public class ParsingRule {
         return pattern;
     }
 
-    public Function<String, ? extends AbstractContent> getParser() {
+    public Function<String, ParserResponse> getParser() {
         return parser;
     }
 

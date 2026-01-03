@@ -53,20 +53,20 @@ public class ParsingRuleset implements Iterable<ParsingRule>
         return this.postProcessor;
     }
 
-    public void addRule(Pattern pattern, Function<String, AbstractContent> parser) {
+    public void addRule(Pattern pattern, Function<String, ParserResponse> parser) {
         this.rules.add(new ParsingRule(pattern, parser));
     }
 
-    public void addRule(Pattern pattern, Function<String, AbstractContent> parser, String name) {
+    public void addRule(Pattern pattern, Function<String, ParserResponse> parser, String name) {
         this.rules.add(new ParsingRule(pattern, parser, name));
     }
 
-    public void addRule(Pattern pattern, Function<String, AbstractContent> parser,
+    public void addRule(Pattern pattern, Function<String, ParserResponse> parser,
         Function<ParsingContext, Boolean> parsingCondition) {
         this.rules.add(new ParsingRule(pattern, parser, parsingCondition));
     }
 
-    public void addRule(Pattern pattern, Function<String, AbstractContent> parser, String name,
+    public void addRule(Pattern pattern, Function<String, ParserResponse> parser, String name,
         Function<ParsingContext, Boolean> parsingCondition) {
         this.rules.add(new ParsingRule(pattern, parser, name, parsingCondition));
     }
