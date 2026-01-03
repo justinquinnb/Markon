@@ -457,6 +457,50 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenSingleLineThematicBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "---";
+        String plainText = "";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineEscapedThematicBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\\---";
+        String plainText = "\\---";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineThematicBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "Hello world!  \n\n---\n\nGoodbye!";
+        String plainText = "Hello world!\n\n\n\nGoodbye!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenMultiLineEscapedThematicBreakMarkdown_whenParsed_thenParsed() {
+        System.out.println("-".repeat(160));
+        String markdown = "\\---";
+        String plainText = "\\---";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";

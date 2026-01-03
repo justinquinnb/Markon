@@ -8,6 +8,7 @@ import com.justinquinnb.markon.builtin.contenttypes.text.InlineCodeText;
 import com.justinquinnb.markon.builtin.contenttypes.text.ItalicText;
 import com.justinquinnb.markon.builtin.contenttypes.text.LineBreak;
 import com.justinquinnb.markon.builtin.contenttypes.text.OrderedListText;
+import com.justinquinnb.markon.builtin.contenttypes.text.ThematicBreak;
 import com.justinquinnb.markon.builtin.contenttypes.text.UnorderedListText;
 import com.justinquinnb.markon.model.MarkupLanguage;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
@@ -48,8 +49,8 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern inlineCodePattern = Pattern.compile("(?<!`)(((?<!\\\\)`){1,2})([\\s\\S]+?)(\\1)(?!`)", Pattern.MULTILINE);
     private static final Pattern codeBlockPattern = Pattern.compile(
         "((^\\\\(\\t| {4})(.*)\\n)?(^(\\t| {4})(.*))(\\n^(\\t| {4})(.*))*)", Pattern.MULTILINE);
+    private static final Pattern thematicBreakPattern = Pattern.compile("^ {0,3}([-*_]){3,}$", Pattern.MULTILINE);
     // (extended codeblock (^(```|~~~)(.*)\n((.*)\n)*\12)
-    // horizontalRule
     // link
     // image
     // HTML
@@ -64,7 +65,9 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
+        parsingRuleset.addRule(thematicBreakPattern, Markdown::parseThematicBreak, "Thematic Break");
 
+        applicationRuleset.put(ThematicBreak.class, Markdown::applyThematicBreak);
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
@@ -84,6 +87,14 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return parsingRuleset;
+    }
+
+    public static String applyThematicBreak(AbstractContent thematicBreak) {
+        return "---";
+    }
+
+    public static ParserResponse parseThematicBreak(String thematicBreak) {
+        return new ParserResponse(new ThematicBreak());
     }
 
     public static boolean isEscapedCodeBlock(ParsingContext parsingContext) {
