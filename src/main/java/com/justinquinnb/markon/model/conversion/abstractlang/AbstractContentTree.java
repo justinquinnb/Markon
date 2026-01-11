@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.stream.Stream;
 
 /**
  * A language-agnostic representation of formatted, text-centric content.
@@ -194,7 +195,27 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
         sb.append("\n");
         sb.append(padding);
         sb.append(prefix);
-        sb.append(node.data.toShortString());
+
+        // Indent lines of data for large blocks of text within the tree
+        sb.append(node.data.getClass().getSimpleName() + " [" + node.data.getStartIndex() + "," +
+            node.data.getEndIndex() + "]:\n");
+        String indentation = "";
+        if (prefix.startsWith(TEE)) {
+            indentation += VERTICAL;
+            indentation += SPACE.repeat(PREFIX_SIZE - 1);
+        } else {
+            indentation += SPACE.repeat(PREFIX_SIZE);
+        }
+
+        int i = 1;
+        List<String> digestedLines = node.data.getDigestedString().lines().toList();
+        int digestedLinesCount = digestedLines.size();
+        for (String line : digestedLines) {
+            sb.append(padding + indentation);
+            sb.append(line);
+            if (i < digestedLinesCount) sb.append("\n");
+            i++;
+        }
 
         // Build padding for children
         String childPadding = padding +
@@ -205,7 +226,7 @@ public class AbstractContentTree implements Comparable<AbstractContentTree> {
         List<AbstractContentTree> childList = new ArrayList<>(node.getChildren());
         int numOfChildren = childList.size();
 
-        for (int i = 0; i < numOfChildren; i++) {
+        for (i = 0; i < numOfChildren; i++) {
             AbstractContentTree child = childList.get(i);
             boolean isLastChild = i == (numOfChildren - 1);
             String childPrefix = isLastChild ?
