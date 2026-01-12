@@ -1,5 +1,6 @@
 package com.justinquinnb.markon.builtin.langs;
 
+import com.justinquinnb.markon.builtin.contenttypes.interactive.Link;
 import com.justinquinnb.markon.builtin.contenttypes.text.BlockQuoteText;
 import com.justinquinnb.markon.builtin.contenttypes.text.BoldText;
 import com.justinquinnb.markon.builtin.contenttypes.text.CodeBlockText;
@@ -19,6 +20,7 @@ import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -38,7 +40,14 @@ public class Markdown implements MarkupLanguage {
             Function<AbstractContent, String>
             > applicationRuleset = new LinkedHashMap<>();
 
-    // REGEX
+    // REGEX PATTERNS
+    /*
+    One pattern per content type was chosen (as opposed to per type of syntax, such as two for bold
+    or italics) to reduce the number of search operations that must be performed on the document.
+
+    While this saves ~n-many operations per combined pattern, it does come at the cost of patter
+    legibility.
+     */
     private static final Pattern headingPattern = Pattern.compile("(^( {0,3})(?<!\\\\)(#{1,6}) .+$)|(^ {0,3}(.+)\\n([-=])+$)", Pattern.MULTILINE);
     private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)([\\s\\S]+?)((\\2)(?!([*_])))", Pattern.MULTILINE);
     private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
@@ -50,6 +59,7 @@ public class Markdown implements MarkupLanguage {
     private static final Pattern codeBlockPattern = Pattern.compile(
         "((^\\\\(\\t| {4})(.*)\\n)?(^(\\t| {4})(.*))(\\n^(\\t| {4})(.*))*)", Pattern.MULTILINE);
     private static final Pattern thematicBreakPattern = Pattern.compile("^ {0,3}([-*_]){3,}$", Pattern.MULTILINE);
+    private static final Pattern linkPattern = Pattern.compile("(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))?\\)", Pattern.MULTILINE);
     // (extended codeblock (^(```|~~~)(.*)\n((.*)\n)*\12)
     // link
     // image
@@ -64,11 +74,13 @@ public class Markdown implements MarkupLanguage {
         parsingRuleset.addRule(headingPattern, Markdown::parseHeading, "Heading");
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
+        parsingRuleset.addRule(linkPattern, Markdown::parseLink, "Link");
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
         parsingRuleset.addRule(thematicBreakPattern, Markdown::parseThematicBreak, "Thematic Break");
 
         applicationRuleset.put(ThematicBreak.class, Markdown::applyThematicBreak);
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
+        applicationRuleset.put(Link.class, Markdown::applyLink);
         applicationRuleset.put(ItalicText.class, Markdown::applyItalic);
         applicationRuleset.put(BoldText.class, Markdown::applyBold);
         applicationRuleset.put(HeadingText.class, Markdown::applyHeading);
@@ -87,6 +99,41 @@ public class Markdown implements MarkupLanguage {
     @Override
     public ParsingRuleset getParsingRuleset() {
         return parsingRuleset;
+    }
+
+    public static String applyLink(AbstractContent linkText) {
+        Link link = (Link)linkText;
+        StringBuilder linkSb = new StringBuilder();
+        // Build the [content](url component
+        linkSb.append("[").append(linkText.getDigestedString()).append("](").append(link.getTarget());
+
+        // Append the link title (if it exists): [content](url "title"
+        if (link.getTitle().isPresent()) {
+         linkSb.append(" \"").append(link.getTitle().get()).append("\"");
+        }
+
+        linkSb.append(")"); // Close the link [content](url "title")
+        return linkSb.toString();
+    }
+
+    public static ParserResponse parseLink(String linkText) {
+        Pattern titledLinkPattern = Pattern.compile("(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))\\)", Pattern.MULTILINE);
+        Matcher titledLinkMatcher = titledLinkPattern.matcher(linkText);
+
+        // Extract the link title (if it exists)
+        Optional<String> linkTitle = Optional.empty();
+        if (titledLinkMatcher.find()) { // Link is titled
+            linkTitle = Optional.of(titledLinkMatcher.group(5));
+        }
+
+        // Extract the link target
+        Matcher completeMatcher = linkPattern.matcher(linkText);
+        completeMatcher.find();
+        String linkTarget = completeMatcher.group(2);
+
+        // Extract the link text
+        String linkContent = completeMatcher.group(1);
+        return new ParserResponse(new Link(linkContent, linkTarget, linkTitle));
     }
 
     public static String applyThematicBreak(AbstractContent thematicBreak) {

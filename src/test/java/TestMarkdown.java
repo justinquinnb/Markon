@@ -501,6 +501,39 @@ public class TestMarkdown {
     }
 
     @Test
+    public void givenSingleLineTitlelessLinkMarkdown() {
+        System.out.println("-".repeat(160));
+        String markdown = "[Hello world!](https://goodbye.link/world)";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenSingleLineTitledLinkMarkdown() {
+        System.out.println("-".repeat(160));
+        String markdown = "[Hello world!](https://goodbye.link/world \"Wait, no!\")";
+        String plainText = "Hello world!";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
+    public void givenEscapedSingleLineTitlelessLinkMarkdown() {
+        System.out.println("-".repeat(160));
+        String markdown = "\\[Hello world!](https://goodbye.link/world)";
+        String plainText = "\\[Hello world!](https://goodbye.link/world)";
+
+        AbstractContentTree contentTree = parser.parse(markdown, lang);
+        String parsedText = contentTree.getData().getDigestedString();
+        assert parsedText.equals(plainText);
+    }
+
+    @Test
     public void givenSingleLineMixedMarkdown_whenParsed_thenParsed() {
         System.out.println("-".repeat(160));
         String markdown = "***Hello* world**. *Hi!* ***What's up?***";
