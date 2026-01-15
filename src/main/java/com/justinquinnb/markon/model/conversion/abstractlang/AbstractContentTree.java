@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.stream.Stream;
 
 /**
  * A language-agnostic representation of formatted, text-centric content.

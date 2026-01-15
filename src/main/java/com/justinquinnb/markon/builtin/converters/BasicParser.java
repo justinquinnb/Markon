@@ -4,6 +4,7 @@ import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContentTree;
 import com.justinquinnb.markon.model.conversion.abstractlang.Document;
 import com.justinquinnb.markon.model.conversion.parsing.MarkupParser;
+import com.justinquinnb.markon.model.conversion.parsing.ParsedContent;
 import com.justinquinnb.markon.model.conversion.parsing.ParserResponse;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingContext;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRule;
@@ -102,30 +103,36 @@ public class BasicParser implements MarkupParser {
                     logger.trace("Match is suitable for parsing.");
                     // Parse the match
                     ParserResponse parserResponse = rule.getParser().apply(matchedText);
-                    AbstractContent parsedContent = parserResponse.getContent();
-                    parsedContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
-                    logger.trace("Parsed into:\n{}", parsedContent);
 
-                    // Update all parents
-                    AbstractContent.adjustSurroundings(
-                        content, matcher.start(), matchLength, parsedContent.getDigestedString());
+                    // Add each parsed content piece to the working text and update surroundings
+                    // accordingly
+                    logger.trace("Parsed into:");
+                    for (ParsedContent parsedContent : parserResponse.getContent()) {
+                        AbstractContent abstractContent = parsedContent.getContent();
+                        abstractContent.setStartIndex(matcher.start()); // the start index doesn't change after parsing
+                        logger.trace(parsedContent.toString());
 
-                    content.add(parsedContent);
+                        // Update all parents
+                        AbstractContent.adjustSurroundings(
+                            content, matcher.start(), matchLength, abstractContent.getDigestedString());
 
-                    // Replace the exact instance of matched text with the digested text
-                    String leftPiece = workingText.substring(0, matcher.start());
-                    String rightPiece = workingText.substring(matcher.end());
+                        content.add(abstractContent);
 
-                    workingText = leftPiece + parsedContent.getDigestedString() + rightPiece;
-                    matcher = rule.getPattern().matcher(workingText);
+                        // Replace the exact instance of matched text with the digested text
+                        String leftPiece = workingText.substring(0, matcher.start());
+                        String rightPiece = workingText.substring(matcher.end());
 
-                    logger.trace("Checking whether embedded contents should be ignored...");
-                    if (parserResponse.isEmbeddedIgnored()) {
-                        logger.trace("Match's embedded contents should be ignored.");
-                        ignoredRegions.add(new TextRegionIndices(
-                            parsedContent.getStartIndex(), parsedContent.getEndIndex()));
-                    } else {
-                        logger.trace("Embedded contents should not be ignored.");
+                        workingText = leftPiece + abstractContent.getDigestedString() + rightPiece;
+                        matcher = rule.getPattern().matcher(workingText);
+
+                        logger.trace("Checking whether embedded contents should be ignored...");
+                        if (parsedContent.isEmbeddedIgnored()) {
+                            logger.trace("Match's embedded contents should be ignored.");
+                            ignoredRegions.add(new TextRegionIndices(
+                                abstractContent.getStartIndex(), abstractContent.getEndIndex()));
+                        } else {
+                            logger.trace("Embedded contents should not be ignored.");
+                        }
                     }
                 }
                 logger.trace("Match processing complete.\n");

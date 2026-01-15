@@ -133,7 +133,7 @@ public class Markdown implements MarkupLanguage {
 
         // Extract the link text
         String linkContent = completeMatcher.group(1);
-        return new ParserResponse(new Link(linkContent, linkTarget, linkTitle));
+        return ParserResponse.of(new Link(linkContent, linkTarget, linkTitle));
     }
 
     public static String applyThematicBreak(AbstractContent thematicBreak) {
@@ -141,7 +141,7 @@ public class Markdown implements MarkupLanguage {
     }
 
     public static ParserResponse parseThematicBreak(String thematicBreak) {
-        return new ParserResponse(new ThematicBreak());
+        return ParserResponse.of(new ThematicBreak());
     }
 
     public static boolean isEscapedCodeBlock(ParsingContext parsingContext) {
@@ -176,7 +176,7 @@ public class Markdown implements MarkupLanguage {
         digestedString.delete(digestedStringLength - 1, digestedStringLength);
 
         CodeBlockText codeBlock = new CodeBlockText(digestedString.toString());
-        return new ParserResponse(codeBlock, true);
+        return ParserResponse.of(codeBlock, true);
     }
 
     public static String applyInlineCode(AbstractContent inlineCodeText) {
@@ -194,7 +194,7 @@ public class Markdown implements MarkupLanguage {
 
         InlineCodeText inlineCode = new InlineCodeText(inlineCodeText.substring(affixLength,
             inlineCodeText.length() - affixLength));
-        return new ParserResponse(inlineCode, true);
+        return ParserResponse.of(inlineCode, true);
     }
 
     public static String applyUnorderedList(AbstractContent orderedListText) {
@@ -240,7 +240,7 @@ public class Markdown implements MarkupLanguage {
 
         UnorderedListText unorderedList = new UnorderedListText(digestedString.toString(),
             itemStartIndices);
-        return new ParserResponse(unorderedList);
+        return ParserResponse.of(unorderedList);
     }
 
     public static String applyOrderedList(AbstractContent orderedListText) {
@@ -290,7 +290,7 @@ public class Markdown implements MarkupLanguage {
         digestedString.delete(digestedStringLength - 1, digestedStringLength);
 
         OrderedListText orderedList = new OrderedListText(digestedString.toString(), itemStartIndices, itemNumbers);
-        return new ParserResponse(orderedList);
+        return ParserResponse.of(orderedList);
     }
 
     public static String applyBlockQuote(AbstractContent blockQuoteText) {
@@ -323,7 +323,7 @@ public class Markdown implements MarkupLanguage {
         );
 
         BlockQuoteText blockQuote = new BlockQuoteText(digestedString.toString());
-        return new ParserResponse(blockQuote);
+        return ParserResponse.of(blockQuote);
     }
 
     public static String applyLineBreak(AbstractContent lineBreak) {
@@ -331,7 +331,7 @@ public class Markdown implements MarkupLanguage {
     }
 
     public static ParserResponse parseLineBreak(String lineBreak) {
-        return new ParserResponse(new LineBreak());
+        return ParserResponse.of(new LineBreak());
     }
 
     public static String applyBold(AbstractContent boldText) {
@@ -340,7 +340,7 @@ public class Markdown implements MarkupLanguage {
 
     public static ParserResponse parseBold(String boldText) {
         BoldText bold = new BoldText(boldText.substring(2, boldText.length() - 2));
-        return new ParserResponse(bold);
+        return ParserResponse.of(bold);
     }
 
     public static String applyItalic(AbstractContent italicText) {
@@ -349,7 +349,7 @@ public class Markdown implements MarkupLanguage {
 
     public static ParserResponse parseItalic(String italicText) {
         ItalicText italics = new ItalicText(italicText.substring(1, italicText.length() - 1));
-        return new ParserResponse(italics);
+        return ParserResponse.of(italics);
     }
 
     public static String applyHeading(AbstractContent headingText) {
@@ -387,6 +387,6 @@ public class Markdown implements MarkupLanguage {
         }
 
         HeadingText heading = new HeadingText(digestedText, level);
-        return new ParserResponse(heading);
+        return ParserResponse.of(heading);
     }
 }
