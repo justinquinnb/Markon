@@ -1,6 +1,7 @@
 package com.justinquinnb.markon.model.conversion.parsing;
 
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
+import com.justinquinnb.markon.model.conversion.util.TextRegionIndices;
 import java.util.PriorityQueue;
 
 /**
@@ -10,7 +11,7 @@ import java.util.PriorityQueue;
 public class ParsingContext {
 
     /**
-     * The start index of the match to potentially be parsed within the surrounding/parent string
+     * The start index of the match to potentially be parsed within the surrounding/parent/source string
      */
     private final int matchStartIndex;
 
@@ -25,16 +26,37 @@ public class ParsingContext {
     private final PriorityQueue<AbstractContent> currentlyParsedContent;
 
     /**
-     * The initial surrounding/parent text prior to all parsing operations
+     * The text the match was derived from
      */
-    private final String initialText;
+    private final String sourceText;
 
-    public ParsingContext(int matchStartIndex, String matchText, PriorityQueue<AbstractContent> currentlyParsedContent,
-        String initialText) {
+    /**
+     * The text regions that have been escaped from parsing
+     */
+    private final PriorityQueue<TextRegionIndices> ignoredRegions;
+
+    /**
+     * Instantiates a collection of parsing context details in a single {@code ParsingContext}
+     * object.
+     *
+     * @param matchStartIndex the start index of the match to potentially be parsed within the
+     *                        surrounding/parent/source text
+     * @param matchText the match text being to potentially parse
+     * @param currentlyParsedContent the abstract content tree as it stands before parsing
+     *                               potentially occurs
+     * @param sourceText the text the match was derived from
+     * @param ignoredRegions the text regions that have been escaped from parsing
+     */
+    public ParsingContext(
+        int matchStartIndex, String matchText,
+        PriorityQueue<AbstractContent> currentlyParsedContent, String sourceText,
+        PriorityQueue<TextRegionIndices> ignoredRegions
+    ) {
         this.matchStartIndex = matchStartIndex;
         this.matchText = matchText;
         this.currentlyParsedContent = currentlyParsedContent;
-        this.initialText = initialText;
+        this.sourceText = sourceText;
+        this.ignoredRegions = ignoredRegions;
     }
 
     public int getMatchStartIndex() {
@@ -49,7 +71,15 @@ public class ParsingContext {
         return currentlyParsedContent;
     }
 
-    public String getInitialText() {
-        return initialText;
+    public String getSourceText() {
+        return sourceText;
+    }
+
+    public PriorityQueue<TextRegionIndices> getIgnoredRegions() {
+        return ignoredRegions;
+    }
+
+    public int getMatchEndIndex() {
+        return matchStartIndex + matchText.length();
     }
 }
