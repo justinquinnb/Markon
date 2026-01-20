@@ -156,7 +156,8 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
         if (oldEnd < thisStart || startOfTarget < thisStart) {
             // Calculate the difference between the old and new string lengths
             int difference = newEnd - oldEnd;
-            logger.trace("This content starts (at {}) after the original string's end (at {}), so shifting by: {}",
+            logger.trace("This content starts (at {}) after the original string's end (at {}), "
+                    + "so shifting by: {}",
                 thisStart, oldEnd, difference);
             this.shiftStartIndex(difference);
             return true;
@@ -173,7 +174,8 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
                 this.setDigestedString(newString);
             } else {
                 logger.trace("This content (spanning [{},{}]) surrounds the original string "
-                        + "(spanning [{},{}]), so splicing the new string into this content's original surroundings...",
+                        + "(spanning [{},{}]), so splicing the new string into this content's "
+                        + "original surroundings...",
                     thisStart, thisEnd, startOfTarget, oldEnd);
 
                 // Get this content's text up until the index immediately before the old substring
@@ -189,7 +191,8 @@ public abstract class AbstractContent implements Comparable<AbstractContent> {
 
                 // Get this content's text after the index immediately following the old substring
                 int rightStart = (oldEnd + 1) - thisStart; // Convert to relative index
-                logger.trace("Right text spans, relative: [{},{}]", rightStart, this.digestedString.length() - 1);
+                logger.trace("Right text spans, relative: [{},{}]", rightStart,
+                    this.digestedString.length() - 1);
                 String rightPart = "";
                 if (rightStart < this.digestedString.length()) {
                     rightPart = this.digestedString.substring(rightStart);

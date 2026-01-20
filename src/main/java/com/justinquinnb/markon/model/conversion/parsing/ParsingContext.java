@@ -11,7 +11,8 @@ import java.util.PriorityQueue;
 public class ParsingContext {
 
     /**
-     * The start index of the match to potentially be parsed within the surrounding/parent/source string
+     * The start index of the match to potentially be parsed within the surrounding/parent/source
+     * string
      */
     private final int matchStartIndex;
 

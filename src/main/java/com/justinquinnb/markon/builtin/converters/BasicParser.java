@@ -11,7 +11,6 @@ import com.justinquinnb.markon.model.conversion.parsing.ParsingRule;
 import com.justinquinnb.markon.model.conversion.parsing.ParsingRuleset;
 import com.justinquinnb.markon.model.conversion.util.TextRegionIndices;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.regex.Matcher;
@@ -51,7 +50,9 @@ public class BasicParser implements MarkupParser {
      * @param ruleset the rules defining content discovery and parsing
      * @return all content parsed from the given {@code text}, ordered by length
      */
-    private static PriorityQueue<AbstractContent> parseAllContent(String sourceText, ParsingRuleset ruleset) {
+    private static PriorityQueue<AbstractContent> parseAllContent(String sourceText,
+        ParsingRuleset ruleset
+    ) {
         // Place all content in a descending length-order queue for later tree construction
         PriorityQueue<AbstractContent> content = new PriorityQueue<>();
 

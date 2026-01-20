@@ -18,7 +18,8 @@ import java.util.List;
  *     <li>Digests {@code [16,22]} into {@code |} formatting: {@code TEXT3 [16,20]}</li>
  *     <li>Adjusts the position of the plaintext piece to {@code [6,10]}</li>
  *     <li>Adjusts the position of the {@code |} formatting piece to {@code [12,16]}</li>
- *     <li>Returns: [{@code ~ style at [0,4]}, {@code plaintext TEXT2 at [6,10]}, {@code | style TEXT3 at [12,16]}]</li>
+ *     <li>Returns: [{@code ~ style at [0,4]}, {@code plaintext TEXT2 at [6,10]},
+ *     {@code | style TEXT3 at [12,16]}]</li>
  * </ol>
  */
 public class ParserResponse {

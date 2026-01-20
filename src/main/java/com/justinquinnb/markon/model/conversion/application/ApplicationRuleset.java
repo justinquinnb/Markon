@@ -15,7 +15,8 @@ import java.util.function.Function;
 public class ApplicationRuleset implements
     Iterable<Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>>
 {
-    private final LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset;
+    private final LinkedHashMap<
+        Class<? extends AbstractContent>, Function<AbstractContent, String>> ruleset;
     private Function<AbstractContentTree, AbstractContentTree> preProcessor = null;
     private Function<String, String> postProcessor = null;
 
@@ -49,7 +50,9 @@ public class ApplicationRuleset implements
      * @return the {@link ApplicationRuleset} that defines derivation of text using {@code this}
      * markup language from an {@link AbstractContentTree}
      */
-    public LinkedHashMap<Class<? extends AbstractContent>, Function<AbstractContent, String>> getApplicationRuleset() {
+    public LinkedHashMap<
+        Class<? extends AbstractContent>, Function<AbstractContent, String>> getApplicationRuleset()
+    {
         return this.ruleset;
     }
 
@@ -70,7 +73,9 @@ public class ApplicationRuleset implements
     }
 
     @Override
-    public Iterator<Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>> iterator() {
+    public Iterator<
+        Entry<Class<? extends AbstractContent>, Function<AbstractContent, String>>> iterator()
+    {
         return this.ruleset.entrySet().iterator();
     }
 }

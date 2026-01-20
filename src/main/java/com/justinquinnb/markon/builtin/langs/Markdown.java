@@ -48,35 +48,59 @@ public class Markdown implements MarkupLanguage {
     While this saves ~n-many operations per combined pattern, it does come at the cost of patter
     legibility.
      */
-    private static final Pattern headingPattern = Pattern.compile("(^( {0,3})(?<!\\\\)(#{1,6}) .+$)|(^ {0,3}(.+)\\n([-=])+$)", Pattern.MULTILINE);
-    private static final Pattern boldPattern = Pattern.compile("(?<!([*_]))(\\*\\*|__)([\\s\\S]+?)((\\2)(?!([*_])))", Pattern.MULTILINE);
-    private static final Pattern italicPattern = Pattern.compile("(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
-    private static final Pattern lineBreakPattern = Pattern.compile("(( {2})|(<(\\s*)br(\\s*)(/?)>)|\\\\)$", Pattern.MULTILINE);
-    private static final Pattern blockQuoteTextPattern = Pattern.compile("(^( ){0,3}>( )?(.*)$)(\\n^( ){0,3}>( )?(.*)$)*", Pattern.MULTILINE);
-    private static final Pattern orderedListPattern = Pattern.compile("((^1(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)(^(\\d{1,9}(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)*", Pattern.MULTILINE);
-    private static final Pattern unorderedListPattern = Pattern.compile("((^[-+*] +)(.*)$)((\\n^[-+*] )(.*)$)*", Pattern.MULTILINE);
+    private static final Pattern headingPattern = Pattern.compile(
+        "(^( {0,3})(?<!\\\\)(#{1,6}) .+$)|(^ {0,3}(.+)\\n([-=])+$)", Pattern.MULTILINE);
+
+    private static final Pattern boldPattern = Pattern.compile(
+        "(?<!([*_]))(\\*\\*|__)([\\s\\S]+?)((\\2)(?!([*_])))", Pattern.MULTILINE);
+
+    private static final Pattern italicPattern = Pattern.compile(
+        "(?<=\\*\\*|__|[^*_]|^)(((?<!\\\\)([*_])(?![*_]))([\\s\\S]+?)((?<!\\\\)(\\2)))(?=\\*\\*|__|[^*_]|$)", Pattern.MULTILINE);
+
+    private static final Pattern lineBreakPattern = Pattern.compile(
+        "(( {2})|(<(\\s*)br(\\s*)(/?)>)|\\\\)$", Pattern.MULTILINE);
+
+    private static final Pattern blockQuoteTextPattern = Pattern.compile(
+        "(^( ){0,3}>( )?(.*)$)(\\n^( ){0,3}>( )?(.*)$)*", Pattern.MULTILINE);
+
+    private static final Pattern orderedListPattern = Pattern.compile(
+        "((^1(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)(^(\\d{1,9}(.|\\))( )+(.*))(\\n(( {4}(.*))?))*)*", Pattern.MULTILINE);
+
+    private static final Pattern unorderedListPattern = Pattern.compile(
+        "((^[-+*] +)(.*)$)((\\n^[-+*] )(.*)$)*", Pattern.MULTILINE);
+
     private static final Pattern inlineCodePattern = Pattern.compile("(?<!`)(((?<!\\\\)`){1,2})([\\s\\S]+?)(\\1)(?!`)", Pattern.MULTILINE);
+
     private static final Pattern codeBlockPattern = Pattern.compile(
         "((^\\\\(\\t| {4})(.*)\\n)?(^(\\t| {4})(.*))(\\n^(\\t| {4})(.*))*)", Pattern.MULTILINE);
-    private static final Pattern thematicBreakPattern = Pattern.compile("^ {0,3}([-*_]){3,}$", Pattern.MULTILINE);
-    private static final Pattern linkPattern = Pattern.compile("(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))?\\)", Pattern.MULTILINE);
+
+    private static final Pattern thematicBreakPattern = Pattern.compile(
+        "^ {0,3}([-*_]){3,}$", Pattern.MULTILINE);
+
+    private static final Pattern linkPattern = Pattern.compile(
+        "(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))?\\)", Pattern.MULTILINE);
     // (extended codeblock (^(```|~~~)(.*)\n((.*)\n)*\12)
     // link
     // image
     // HTML
 
     static {
-        parsingRuleset.addRule(codeBlockPattern, Markdown::parseCodeBlock, "Code Block", Markdown::isEscapedCodeBlock);
-        parsingRuleset.addRule(blockQuoteTextPattern, Markdown::parseBlockQuote, "Block Quote");
-        parsingRuleset.addRule(orderedListPattern, Markdown::parseOrderedList, "Ordered List");
-        parsingRuleset.addRule(unorderedListPattern, Markdown::parseUnorderedList, "Unordered List");
+        parsingRuleset.addRule(
+            codeBlockPattern, Markdown::parseCodeBlock, "Code Block", Markdown::isEscapedCodeBlock);
+        parsingRuleset.addRule(
+            blockQuoteTextPattern, Markdown::parseBlockQuote, "Block Quote");
+        parsingRuleset.addRule(
+            orderedListPattern, Markdown::parseOrderedList, "Ordered List");
+        parsingRuleset.addRule(
+            unorderedListPattern, Markdown::parseUnorderedList, "Unordered List");
         parsingRuleset.addRule(inlineCodePattern, Markdown::parseInlineCode, "Inline Code");
         parsingRuleset.addRule(headingPattern, Markdown::parseHeading, "Heading");
         parsingRuleset.addRule(boldPattern, Markdown::parseBold, "Bold");
         parsingRuleset.addRule(italicPattern, Markdown::parseItalic, "Italic");
         parsingRuleset.addRule(linkPattern, Markdown::parseLink, "Link");
         parsingRuleset.addRule(lineBreakPattern, Markdown::parseLineBreak, "Line Break");
-        parsingRuleset.addRule(thematicBreakPattern, Markdown::parseThematicBreak, "Thematic Break");
+        parsingRuleset.addRule(
+            thematicBreakPattern, Markdown::parseThematicBreak, "Thematic Break");
 
         applicationRuleset.put(ThematicBreak.class, Markdown::applyThematicBreak);
         applicationRuleset.put(LineBreak.class, Markdown::applyLineBreak);
@@ -105,7 +129,8 @@ public class Markdown implements MarkupLanguage {
         Link link = (Link)linkText;
         StringBuilder linkSb = new StringBuilder();
         // Build the [content](url component
-        linkSb.append("[").append(linkText.getDigestedString()).append("](").append(link.getTarget());
+        linkSb.append("[").append(linkText.getDigestedString()).append("](")
+            .append(link.getTarget());
 
         // Append the link title (if it exists): [content](url "title"
         if (link.getTitle().isPresent()) {
@@ -117,7 +142,8 @@ public class Markdown implements MarkupLanguage {
     }
 
     public static ParserResponse parseLink(String linkText) {
-        Pattern titledLinkPattern = Pattern.compile("(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))\\)", Pattern.MULTILINE);
+        Pattern titledLinkPattern = Pattern.compile(
+            "(?<!\\\\)\\[(.*)(?<!\\\\)]\\((.*)( (\"(.*)\"))\\)", Pattern.MULTILINE);
         Matcher titledLinkMatcher = titledLinkPattern.matcher(linkText);
 
         // Extract the link title (if it exists)
@@ -207,7 +233,8 @@ public class Markdown implements MarkupLanguage {
             // Determine where each list item ends
             if (i < listItemStartIndices.size() - 1) {
                 int endOfItem = listItemStartIndices.get(i + 1) - 1;
-                String listItemText = unorderedList.getDigestedString().substring(startOfItem, endOfItem);
+                String listItemText = unorderedList.getDigestedString()
+                    .substring(startOfItem, endOfItem);
                 markedUpString.append(listItemText).append("\n");
             } else {
                 String listItemText = unorderedList.getDigestedString().substring(startOfItem);
@@ -254,7 +281,8 @@ public class Markdown implements MarkupLanguage {
             // Determine where each list item ends
             if (i < listItemStartIndices.size() - 1) {
                 int endOfItem = listItemStartIndices.get(i + 1) - 1;
-                String listItemText = orderedList.getDigestedString().substring(startOfItem, endOfItem);
+                String listItemText = orderedList.getDigestedString()
+                    .substring(startOfItem, endOfItem);
                 listItemText = itemNumbers.get(i) + ". " + listItemText;
                 markedUpString.append(listItemText).append("\n");
             } else {
@@ -278,7 +306,8 @@ public class Markdown implements MarkupLanguage {
 
         // Locate each list item
         while (matcher.find()) {
-            itemNumbers.add(Integer.parseInt(matcher.group().substring(0, matcher.group().indexOf('.'))));
+            itemNumbers.add(Integer.parseInt(matcher.group().substring(0, matcher.group()
+                .indexOf('.'))));
             digestedString.append(matcher.group(2)).append("\n");
             numCharsRemoved += matcher.group(1).length();
             itemStartIndices.add(matcher.start() - numCharsRemoved + numCharsAdded);
@@ -289,7 +318,8 @@ public class Markdown implements MarkupLanguage {
         int digestedStringLength = digestedString.length();
         digestedString.delete(digestedStringLength - 1, digestedStringLength);
 
-        OrderedListText orderedList = new OrderedListText(digestedString.toString(), itemStartIndices, itemNumbers);
+        OrderedListText orderedList = new OrderedListText(
+            digestedString.toString(), itemStartIndices, itemNumbers);
         return ParserResponse.of(orderedList);
     }
 
@@ -362,7 +392,8 @@ public class Markdown implements MarkupLanguage {
         String digestedText = "";
 
         // ATX-Style headings
-        Matcher atxMatcher = Pattern.compile("^( {0,3})(?<!\\\\)(#{1,6}) .+$").matcher(headingText);
+        Matcher atxMatcher = Pattern.compile("^( {0,3})(?<!\\\\)(#{1,6}) .+$")
+            .matcher(headingText);
         if (atxMatcher.find()) {
             // Check if trailing heading syntax is used (text to digest is surrounded)
             Matcher surroundedMatcher = Pattern
@@ -379,7 +410,8 @@ public class Markdown implements MarkupLanguage {
             }
             digestedText = headingText.substring(level + 1, textEndsAtChar);
         } else { // Setext-Style headings
-            Matcher setextMatcher = Pattern.compile("^ {0,3}(.+)\\n([-=])+$").matcher(headingText);
+            Matcher setextMatcher = Pattern.compile("^ {0,3}(.+)\\n([-=])+$")
+                .matcher(headingText);
             if (setextMatcher.find()) {
                 digestedText = setextMatcher.group(1);
                 level = setextMatcher.group(2).charAt(0) == '=' ? 1 : 2;

@@ -1,7 +1,6 @@
 package com.justinquinnb.markon.builtin.contenttypes.interactive;
 
 import com.justinquinnb.markon.model.conversion.abstractlang.AbstractContent;
-import java.net.URL;
 import java.util.Optional;
 
 /**
